@@ -5,6 +5,7 @@
 #include <iostream>
 #include <map>
 #include <optional>
+#include <set>
 #include <vector>
 
 namespace HelloTriangle {
@@ -104,126 +105,9 @@ private:
   void initVulkan() {
     createInstance();
     setupDebugMessenger();
+    createSurface();
     pickPhysicalDevice();
     createLogicalDevice();
-  }
-
-  void pickPhysicalDevice() {
-    uint32_t device_count = 0;
-    vkEnumeratePhysicalDevices(instance_, &device_count, nullptr);
-
-    if (device_count == 0) {
-      throw std::runtime_error("failed to find GPUs with Vulkan support!");
-    }
-
-    std::vector<VkPhysicalDevice> devices(device_count);
-    vkEnumeratePhysicalDevices(instance_, &device_count, devices.data());
-
-    // Use an ordered map to automatically sort candidates by increasing score
-    std::multimap<int, VkPhysicalDevice> candidates;
-
-    for (const auto &device : devices) {
-      int score = rateDeviceSuitability(device);
-      candidates.insert(std::make_pair(score, device));
-    }
-
-    // Check if the best candidate is suitable at all
-    if (candidates.rbegin()->first > 0) {
-      physical_device_ = candidates.rbegin()->second;
-    } else {
-      throw std::runtime_error("failed to find a suitable GPU!");
-    }
-  }
-
-  int rateDeviceSuitability(VkPhysicalDevice device) {
-    VkPhysicalDeviceProperties device_properties;
-    VkPhysicalDeviceFeatures device_features;
-    vkGetPhysicalDeviceProperties(device, &device_properties);
-    vkGetPhysicalDeviceFeatures(device, &device_features);
-
-    int score = 0;
-
-    // Discrete GPUs have a significant performance advantage
-    if (device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
-      score += 1000;
-    }
-
-    // Maximum possible size of textures affects graphics quality
-    score += device_properties.limits.maxImageDimension2D;
-
-    // Application can't function without geometry shaders
-    if (!device_features.geometryShader) {
-      return 0;
-    }
-
-    // Application can't function without the required queue families
-    QueueFamilyIndices indices = findQueueFamilies(device);
-    if (!indices.isComplete()) {
-      return 0;
-    }
-
-    return score;
-  }
-
-  struct QueueFamilyIndices {
-    std::optional<uint32_t> graphicsFamily;
-
-    bool isComplete() { return graphicsFamily.has_value(); }
-  };
-
-  QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
-    QueueFamilyIndices indices{};
-
-    uint32_t queue_family_count = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count,
-                                             nullptr);
-
-    std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
-    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count,
-                                             queue_families.data());
-
-    int i = 0;
-    for (const auto &queue_family : queue_families) {
-      if (queue_family.queueCount & VK_QUEUE_GRAPHICS_BIT) {
-        indices.graphicsFamily = i;
-      }
-
-      if (indices.isComplete()) {
-        break;
-      }
-
-      i++;
-    }
-
-    return indices;
-  }
-
-  void createLogicalDevice() {
-    QueueFamilyIndices indices = findQueueFamilies(physical_device_);
-    float queue_priority = 1.0f;
-
-    VkDeviceQueueCreateInfo queue_create_info{};
-    queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queue_create_info.queueFamilyIndex = indices.graphicsFamily.value();
-    queue_create_info.queueCount = 1;
-    queue_create_info.pQueuePriorities = &queue_priority;
-
-    VkPhysicalDeviceFeatures device_features{};
-
-    VkDeviceCreateInfo device_create_info{};
-    device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    device_create_info.pQueueCreateInfos = &queue_create_info;
-    device_create_info.queueCreateInfoCount = 1;
-    device_create_info.pEnabledFeatures = &device_features;
-    device_create_info.enabledExtensionCount = 0;
-
-    if (vkCreateDevice(physical_device_, &device_create_info, nullptr,
-                       &device_) != VK_SUCCESS) {
-      throw std::runtime_error("failed to create logical device!");
-    }
-
-    vkGetDeviceQueue(device_, indices.graphicsFamily.value(), 0,
-                     &graphics_queue_);
   }
 
   void createInstance() {
@@ -319,6 +203,151 @@ private:
     return VK_FALSE;
   }
 
+  void createSurface() {
+    if (glfwCreateWindowSurface(instance_, window_, nullptr, &surface_) !=
+        VK_SUCCESS) {
+      throw std::runtime_error("failed to create window surface!");
+    }
+  }
+
+  void pickPhysicalDevice() {
+    uint32_t device_count = 0;
+    vkEnumeratePhysicalDevices(instance_, &device_count, nullptr);
+
+    if (device_count == 0) {
+      throw std::runtime_error("failed to find GPUs with Vulkan support!");
+    }
+
+    std::vector<VkPhysicalDevice> devices(device_count);
+    vkEnumeratePhysicalDevices(instance_, &device_count, devices.data());
+
+    // Use an ordered map to automatically sort candidates by increasing score
+    std::multimap<int, VkPhysicalDevice> candidates;
+
+    for (const auto &device : devices) {
+      int score = rateDeviceSuitability(device);
+      candidates.insert(std::make_pair(score, device));
+    }
+
+    // Check if the best candidate is suitable at all
+    if (candidates.rbegin()->first > 0) {
+      physical_device_ = candidates.rbegin()->second;
+    } else {
+      throw std::runtime_error("failed to find a suitable GPU!");
+    }
+  }
+
+  int rateDeviceSuitability(VkPhysicalDevice device) {
+    VkPhysicalDeviceProperties device_properties;
+    VkPhysicalDeviceFeatures device_features;
+    vkGetPhysicalDeviceProperties(device, &device_properties);
+    vkGetPhysicalDeviceFeatures(device, &device_features);
+
+    int score = 0;
+
+    // Discrete GPUs have a significant performance advantage
+    if (device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+      score += 1000;
+    }
+
+    // Maximum possible size of textures affects graphics quality
+    score += device_properties.limits.maxImageDimension2D;
+
+    // Application can't function without geometry shaders
+    if (!device_features.geometryShader) {
+      return 0;
+    }
+
+    // Application can't function without the required queue families
+    QueueFamilyIndices indices = findQueueFamilies(device);
+    if (!indices.isComplete()) {
+      return 0;
+    }
+
+    return score;
+  }
+
+  struct QueueFamilyIndices {
+    std::optional<uint32_t> graphics_family;
+    std::optional<uint32_t> present_family;
+
+    bool isComplete() {
+      return graphics_family.has_value() && present_family.has_value();
+    }
+  };
+
+  QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
+    QueueFamilyIndices indices{};
+
+    uint32_t queue_family_count = 0;
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count,
+                                             nullptr);
+
+    std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
+    vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count,
+                                             queue_families.data());
+
+    int i = 0;
+    for (const auto &queue_family : queue_families) {
+      if (queue_family.queueCount & VK_QUEUE_GRAPHICS_BIT) {
+        indices.graphics_family = i;
+      }
+
+      VkBool32 present_support = false;
+      vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface_,
+                                           &present_support);
+      if (present_support) {
+        indices.present_family = i;
+      }
+
+      if (indices.isComplete()) {
+        break;
+      }
+
+      i++;
+    }
+
+    return indices;
+  }
+
+  void createLogicalDevice() {
+    QueueFamilyIndices indices = findQueueFamilies(physical_device_);
+    float queue_priority = 1.0f;
+
+    std::vector<VkDeviceQueueCreateInfo> queue_create_infos{};
+    std::set<uint32_t> unique_queue_families{indices.graphics_family.value(),
+                                             indices.present_family.value()};
+    for (uint32_t queue_family : unique_queue_families) {
+      VkDeviceQueueCreateInfo queue_create_info{};
+      queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+      queue_create_info.queueFamilyIndex = indices.graphics_family.value();
+      queue_create_info.queueCount = 1;
+      queue_create_info.pQueuePriorities = &queue_priority;
+
+      queue_create_infos.push_back(queue_create_info);
+    }
+
+    VkPhysicalDeviceFeatures device_features{};
+
+    VkDeviceCreateInfo device_create_info{};
+    device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    device_create_info.pQueueCreateInfos = queue_create_infos.data();
+    device_create_info.queueCreateInfoCount =
+        static_cast<uint32_t>(queue_create_infos.size());
+    device_create_info.pEnabledFeatures = &device_features;
+    device_create_info.enabledExtensionCount = 0;
+
+    if (vkCreateDevice(physical_device_, &device_create_info, nullptr,
+                       &device_) != VK_SUCCESS) {
+      throw std::runtime_error("failed to create logical device!");
+    }
+
+    vkGetDeviceQueue(device_, indices.graphics_family.value(), 0,
+                     &graphics_queue_);
+    vkGetDeviceQueue(device_, indices.present_family.value(), 0,
+                     &present_queue_);
+  }
+
   void mainLoop() const {
     while (!glfwWindowShouldClose(window_)) {
       glfwPollEvents();
@@ -331,6 +360,7 @@ private:
     }
 
     vkDestroyDevice(device_, nullptr);
+    vkDestroySurfaceKHR(instance_, surface_, nullptr);
     vkDestroyInstance(instance_, nullptr);
 
     glfwDestroyWindow(window_);
@@ -343,6 +373,8 @@ private:
   VkPhysicalDevice physical_device_ = VK_NULL_HANDLE;
   VkDevice device_ = VK_NULL_HANDLE;
   VkQueue graphics_queue_ = VK_NULL_HANDLE;
+  VkQueue present_queue_ = VK_NULL_HANDLE;
+  VkSurfaceKHR surface_ = VK_NULL_HANDLE;
 };
 } // namespace HelloTriangle
 
