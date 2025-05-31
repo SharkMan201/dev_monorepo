@@ -1,7 +1,7 @@
 """
 """
 
-load("@//third_party/glsl:toolchain.bzl", "glsl_toolchain")
+load("//third_party/glsl:toolchain.bzl", "glsl_toolchain")
 
 toolchain_type(
     name = "toolchain_type",
@@ -13,7 +13,7 @@ toolchain_type(
 
 glsl_toolchain(
     name = "on_linux",
-    glslc = "@//third_party/vulkan_linux:glslc",
+    glslc = "//third_party/vulkan_linux:glslc",
 )
 
 toolchain(
@@ -22,7 +22,7 @@ toolchain(
         "@platforms//os:linux",
     ],
     toolchain = ":on_linux",
-    toolchain_type = "@//third_party/glsl:toolchain_type",
+    toolchain_type = "//third_party/glsl:toolchain_type",
 )
 
 #################################################
@@ -31,7 +31,7 @@ toolchain(
 
 glsl_toolchain(
     name = "on_windows",
-    glslc = "@//third_party/vulkan_windows:glslc",
+    glslc = "//third_party/vulkan_windows:glslc",
 )
 
 toolchain(
@@ -41,7 +41,7 @@ toolchain(
         "@platforms//cpu:x86_64",
     ],
     toolchain = ":on_windows",
-    toolchain_type = "@//third_party/glsl:toolchain_type",
+    toolchain_type = "//third_party/glsl:toolchain_type",
 )
 
 #################################################
@@ -50,7 +50,7 @@ toolchain(
 
 glsl_toolchain(
     name = "on_macos",
-    glslc = "@//third_party/vulkan_macos:glslc",
+    glslc = "//third_party/vulkan_macos:glslc",
 )
 
 toolchain(
@@ -60,5 +60,5 @@ toolchain(
         "@platforms//cpu:x86_64",
     ],
     toolchain = ":on_macos",
-    toolchain_type = "@//third_party/glsl:toolchain_type",
+    toolchain_type = "//third_party/glsl:toolchain_type",
 )

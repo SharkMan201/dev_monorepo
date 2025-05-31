@@ -1,7 +1,7 @@
 """
 """
 
-load("@//third_party/glsl:rules.bzl",
+load("//third_party/glsl:rules.bzl",
     _glsl_shader = "glsl_shader",
     _glsl_header_library = "glsl_header_library")
 

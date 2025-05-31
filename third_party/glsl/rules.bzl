@@ -49,7 +49,7 @@ def _glsl_header_library(ctx):
     ]
 
 def _glsl_shader(ctx):
-    toolchain = ctx.toolchains["@//third_party/glsl:toolchain_type"]
+    toolchain = ctx.toolchains["//third_party/glsl:toolchain_type"]
 
     shader = ctx.file.shader
 
@@ -107,6 +107,6 @@ glsl_shader = rule(
         "shader": attr.label(allow_single_file = [".vert", ".frag", ".tesc", ".tese", ".geom", ".comp"]),
         "deps": attr.label_list(providers = [GlslInfo]),
     },
-    toolchains = ["@//third_party/glsl:toolchain_type"],
+    toolchains = ["//third_party/glsl:toolchain_type"],
     provides = [DefaultInfo],
 )

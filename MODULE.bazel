@@ -9,26 +9,11 @@ bazel_dep(name = "platforms", version = "1.0.0")
 register_toolchains()
 
 # load vulkan
-#git_repository = use_repo_rule("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
-#
-#git_repository(
-#    name = "rules_vulkan",
-#    remote = "https://github.com/jadarve/rules_vulkan.git",
-#    tag = "v0.0.11"
-#)
-
-#vulkan_repositories = use_repo_rule("@rules_vulkan//vulkan:repositories.bzl", "vulkan_repositories")
-#vulkan_repositories(name="rules_vulkan")
-
-#vulkan_repositories = use_repo_rule("//third_party/vulkan:repositories.bzl", "vulkan_repositories")
-#vulkan_repositories(name="vulkan_repositories")
-
 vulkan_module = use_extension("//third_party/vulkan:extensions.bzl", "vulkan_module")
 use_repo(vulkan_module, "vulkan_windows")
 use_repo(vulkan_module, "vulkan_linux")
 use_repo(vulkan_module, "vulkan_macos")
 use_repo(vulkan_module, "vulkan_android")
-#vulkan_module
 
 # register glsl toolchains
 register_toolchains(
@@ -51,21 +36,11 @@ http_archive(
 )
 
 # load glfw
-#GLFW_VERSION = "3.4"
-#
-#http_archive(
-#    name = "glfw",
-#    build_file = "//third_party/glfw:glfw.bzl.bkup",
-#    sha256 = "A133DDC3D3C66143EBA9035621DB8E0BCF34DBA1EE9514A9E23E96AFD39FD57A",
-#    strip_prefix = "glfw-{}".format(GLFW_VERSION),
-#    urls = ["https://github.com/glfw/glfw/archive/{}.zip".format(GLFW_VERSION)],
-#)
-
 GLFW_VERSION = "3.3.5"
 
 http_archive(
     name = "glfw",
-    build_file = "@//third_party/glfw:glfw.bzl",
+    build_file = "//third_party/glfw:glfw.bzl",
     sha256 = "a89bb6074bc12bc12fcd322dcf848af81b679ccdc695f70b29ca8a9aa066684b",
     strip_prefix = "glfw-{}".format(GLFW_VERSION),
     urls = ["https://github.com/glfw/glfw/archive/{}.zip".format(GLFW_VERSION)],
