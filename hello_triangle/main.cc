@@ -43,6 +43,9 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
   }
 }
 
+const std::vector<const char *> DEVICE_EXTENSIONS = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
 class HelloTriangleApplication {
 public:
   void run() {
@@ -264,6 +267,10 @@ private:
       return 0;
     }
 
+    if (!checkDeviceExtensionSupport(device)) {
+      return 0;
+    }
+
     return score;
   }
 
@@ -310,6 +317,24 @@ private:
     return indices;
   }
 
+  bool checkDeviceExtensionSupport(VkPhysicalDevice device) {
+    uint32_t extension_count = 0;
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count,
+                                         nullptr);
+
+    std::vector<VkExtensionProperties> available_extensions(extension_count);
+    vkEnumerateDeviceExtensionProperties(device, nullptr, &extension_count,
+                                         available_extensions.data());
+
+    std::set<std::string> required_extensions(DEVICE_EXTENSIONS.begin(),
+                                              DEVICE_EXTENSIONS.end());
+    for (const auto &extension : available_extensions) {
+      required_extensions.erase(extension.extensionName);
+    }
+
+    return required_extensions.empty();
+  }
+
   void createLogicalDevice() {
     QueueFamilyIndices indices = findQueueFamilies(physical_device_);
     float queue_priority = 1.0f;
@@ -335,7 +360,9 @@ private:
     device_create_info.queueCreateInfoCount =
         static_cast<uint32_t>(queue_create_infos.size());
     device_create_info.pEnabledFeatures = &device_features;
-    device_create_info.enabledExtensionCount = 0;
+    device_create_info.enabledExtensionCount =
+        static_cast<uint32_t>(DEVICE_EXTENSIONS.size());
+    device_create_info.ppEnabledExtensionNames = DEVICE_EXTENSIONS.data();
 
     if (vkCreateDevice(physical_device_, &device_create_info, nullptr,
                        &device_) != VK_SUCCESS) {
