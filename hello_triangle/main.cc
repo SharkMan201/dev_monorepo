@@ -105,6 +105,7 @@ private:
     createInstance();
     setupDebugMessenger();
     pickPhysicalDevice();
+    createLogicalDevice();
   }
 
   void pickPhysicalDevice() {
@@ -195,6 +196,34 @@ private:
     }
 
     return indices;
+  }
+
+  void createLogicalDevice() {
+    QueueFamilyIndices indices = findQueueFamilies(physical_device_);
+    float queue_priority = 1.0f;
+
+    VkDeviceQueueCreateInfo queue_create_info{};
+    queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queue_create_info.queueFamilyIndex = indices.graphicsFamily.value();
+    queue_create_info.queueCount = 1;
+    queue_create_info.pQueuePriorities = &queue_priority;
+
+    VkPhysicalDeviceFeatures device_features{};
+
+    VkDeviceCreateInfo device_create_info{};
+    device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    device_create_info.pQueueCreateInfos = &queue_create_info;
+    device_create_info.queueCreateInfoCount = 1;
+    device_create_info.pEnabledFeatures = &device_features;
+    device_create_info.enabledExtensionCount = 0;
+
+    if (vkCreateDevice(physical_device_, &device_create_info, nullptr,
+                       &device_) != VK_SUCCESS) {
+      throw std::runtime_error("failed to create logical device!");
+    }
+
+    vkGetDeviceQueue(device_, indices.graphicsFamily.value(), 0,
+                     &graphics_queue_);
   }
 
   void createInstance() {
@@ -301,6 +330,7 @@ private:
       DestroyDebugUtilsMessengerEXT(instance_, debug_messenger_, nullptr);
     }
 
+    vkDestroyDevice(device_, nullptr);
     vkDestroyInstance(instance_, nullptr);
 
     glfwDestroyWindow(window_);
@@ -311,6 +341,8 @@ private:
   VkInstance instance_ = nullptr;
   VkDebugUtilsMessengerEXT debug_messenger_ = nullptr;
   VkPhysicalDevice physical_device_ = VK_NULL_HANDLE;
+  VkDevice device_ = VK_NULL_HANDLE;
+  VkQueue graphics_queue_ = VK_NULL_HANDLE;
 };
 } // namespace HelloTriangle
 
