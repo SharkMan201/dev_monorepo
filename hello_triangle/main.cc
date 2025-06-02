@@ -114,6 +114,7 @@ private:
     createLogicalDevice();
     createSwapChain();
     createImageViews();
+    createGraphicsPipeline();
   }
 
   void createInstance() {
@@ -551,6 +552,10 @@ private:
         throw std::runtime_error("failed to create swap chain image!");
       }
     }
+  }
+
+  void createGraphicsPipeline() {
+
   }
 
   void mainLoop() const {
