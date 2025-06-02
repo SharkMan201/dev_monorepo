@@ -8,7 +8,7 @@ cc_binary(
     ],
     deps = [
         "//third_party/glfw",
-        "//third_party/glm",
-        "//third_party/vulkan:vulkan_cc_library"
+        "//third_party/vulkan:vulkan_cc_library",
+        "@glm",
     ],
 )
