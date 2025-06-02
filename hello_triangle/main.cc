@@ -113,6 +113,7 @@ private:
     pickPhysicalDevice();
     createLogicalDevice();
     createSwapChain();
+    createImageViews();
   }
 
   void createInstance() {
@@ -524,6 +525,34 @@ private:
     swap_chain_extent = extent;
   }
 
+  void createImageViews() {
+    swap_chain_image_views_.resize(swap_chain_images_.size());
+
+    for (size_t i = 0; i < swap_chain_images_.size(); i++) {
+      VkImageViewCreateInfo create_info{};
+      create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+      create_info.image = swap_chain_images_[i];
+      create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+      create_info.format = swap_chain_image_format_;
+
+      create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+      create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+      create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+      create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+      create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      create_info.subresourceRange.baseMipLevel = 0;
+      create_info.subresourceRange.levelCount = 1;
+      create_info.subresourceRange.baseArrayLayer = 0;
+      create_info.subresourceRange.layerCount = 1;
+
+      if (vkCreateImageView(device_, &create_info, nullptr,
+                            &swap_chain_image_views_[i]) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create swap chain image!");
+      }
+    }
+  }
+
   void mainLoop() const {
     while (!glfwWindowShouldClose(window_)) {
       glfwPollEvents();
@@ -533,6 +562,10 @@ private:
   void cleanup() const {
     if (enable_validation_layers) {
       DestroyDebugUtilsMessengerEXT(instance_, debug_messenger_, nullptr);
+    }
+
+    for (auto imageView : swap_chain_image_views_) {
+      vkDestroyImageView(device_, imageView, nullptr);
     }
 
     vkDestroySwapchainKHR(device_, swap_chain_, nullptr);
@@ -553,9 +586,10 @@ private:
   VkQueue present_queue_ = VK_NULL_HANDLE;
   VkSurfaceKHR surface_ = VK_NULL_HANDLE;
   VkSwapchainKHR swap_chain_ = VK_NULL_HANDLE;
-  std::vector<VkImage> swap_chain_images_;
   VkFormat swap_chain_image_format_ = VK_FORMAT_UNDEFINED;
-  VkExtent2D swap_chain_extent;
+  VkExtent2D swap_chain_extent = {};
+  std::vector<VkImage> swap_chain_images_;
+  std::vector<VkImageView> swap_chain_image_views_;
 };
 } // namespace HelloTriangle
 
