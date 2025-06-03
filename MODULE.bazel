@@ -16,11 +16,7 @@ use_repo(vulkan_module, "vulkan_macos")
 use_repo(vulkan_module, "vulkan_android")
 
 # register glsl toolchains
-register_toolchains(
-    "//third_party/glsl:glsl_windows_toolchain",
-    "//third_party/glsl:glsl_linux_toolchain",
-    "//third_party/glsl:glsl_macos_toolchain",
-)
+register_toolchains("//third_party/glsl:glsl_all_platforms_toolchain")
 
 # load glm
 bazel_dep(name = "glm", version = "1.0.1")

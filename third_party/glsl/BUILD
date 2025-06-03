@@ -7,58 +7,17 @@ toolchain_type(
     name = "toolchain_type",
 )
 
-#################################################
-## LINUX
-#################################################
-
 glsl_toolchain(
-    name = "on_linux",
-    glslc = "//third_party/vulkan_linux:glslc",
+    name = "glsl_tc",
+    glslc = select({
+        "@platforms//os:linux": "@vulkan_linux//:glslc",
+        "@platforms//os:windows": "@vulkan_windows//:glslc",
+        "@platforms//os:macos": "@vulkan_macos//:glslc",
+    }),
 )
 
 toolchain(
-    name = "glsl_linux_toolchain",
-    exec_compatible_with = [
-        "@platforms//os:linux",
-    ],
-    toolchain = ":on_linux",
-    toolchain_type = "//third_party/glsl:toolchain_type",
-)
-
-#################################################
-## WINDOWS
-#################################################
-
-glsl_toolchain(
-    name = "on_windows",
-    glslc = "//third_party/vulkan_windows:glslc",
-)
-
-toolchain(
-    name = "glsl_windows_toolchain",
-    exec_compatible_with = [
-        "@platforms//os:windows",
-        "@platforms//cpu:x86_64",
-    ],
-    toolchain = ":on_windows",
-    toolchain_type = "//third_party/glsl:toolchain_type",
-)
-
-#################################################
-## MACOS
-#################################################
-
-glsl_toolchain(
-    name = "on_macos",
-    glslc = "//third_party/vulkan_macos:glslc",
-)
-
-toolchain(
-    name = "glsl_macos_toolchain",
-    exec_compatible_with = [
-        "@platforms//os:macos",
-        "@platforms//cpu:x86_64",
-    ],
-    toolchain = ":on_macos",
+    name = "glsl_all_platforms_toolchain",
+    toolchain = ":glsl_tc",
     toolchain_type = "//third_party/glsl:toolchain_type",
 )
