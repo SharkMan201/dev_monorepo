@@ -787,7 +787,25 @@ private:
   }
 
   void createFrameBuffers() {
+    swap_chain_framebuffers_.resize(swap_chain_image_views_.size());
 
+    for (auto i = 0; i < swap_chain_image_views_.size(); i++) {
+      VkImageView attachments[] = {swap_chain_image_views_[i]};
+
+      VkFramebufferCreateInfo frame_buffer_info{};
+      frame_buffer_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+      frame_buffer_info.renderPass = render_pass_;
+      frame_buffer_info.attachmentCount = 1;
+      frame_buffer_info.pAttachments = attachments;
+      frame_buffer_info.width = swap_chain_extent_.width;
+      frame_buffer_info.height = swap_chain_extent_.height;
+      frame_buffer_info.layers = 1;
+
+      if (vkCreateFramebuffer(device_, &frame_buffer_info, nullptr,
+                              &swap_chain_framebuffers_[i]) != VK_SUCCESS) {
+        throw std::runtime_error("failed to create framebuffer!");
+      }
+    }
   }
 
   void mainLoop() const {
@@ -799,6 +817,10 @@ private:
   void cleanup() const {
     if (enable_validation_layers) {
       DestroyDebugUtilsMessengerEXT(instance_, debug_messenger_, nullptr);
+    }
+
+    for (auto framebuffer : swap_chain_framebuffers_) {
+      vkDestroyFramebuffer(device_, framebuffer, nullptr);
     }
 
     vkDestroyPipeline(device_, graphics_pipeline_, nullptr);
@@ -835,7 +857,7 @@ private:
   VkRenderPass render_pass_ = VK_NULL_HANDLE;
   VkPipeline graphics_pipeline_ = VK_NULL_HANDLE;
   std::vector<VkFramebuffer> swap_chain_framebuffers_;
-};
+}; // namespace HelloTriangle
 } // namespace HelloTriangle
 
 int main(int argc, char **argv) {
