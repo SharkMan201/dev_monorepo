@@ -141,6 +141,7 @@ private:
     createImageViews();
     createRenderPass();
     createGraphicsPipeline();
+    createFrameBuffers();
   }
 
   void createInstance() {
@@ -667,12 +668,13 @@ private:
     scissor.offset = {0, 0};
     scissor.extent = swap_chain_extent_;
 
-    VkPipelineViewportStateCreateInfo viewportState{};
-    viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewportState.viewportCount = 1;
-    viewportState.pViewports = &viewport;
-    viewportState.scissorCount = 1;
-    viewportState.pScissors = &scissor;
+    VkPipelineViewportStateCreateInfo viewport_state{};
+    viewport_state.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+    viewport_state.viewportCount = 1;
+    viewport_state.pViewports = &viewport;
+    viewport_state.scissorCount = 1;
+    viewport_state.pScissors = &scissor;
 
     VkPipelineRasterizationStateCreateInfo rasterizer{};
     rasterizer.sType =
@@ -718,17 +720,17 @@ private:
     colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
     colorBlendAttachment.alphaBlendOp = VK_BLEND_OP_ADD;             // Optional
 
-    VkPipelineColorBlendStateCreateInfo colorBlending{};
-    colorBlending.sType =
+    VkPipelineColorBlendStateCreateInfo color_blending{};
+    color_blending.sType =
         VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorBlending.logicOpEnable = VK_FALSE;
-    colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
-    colorBlending.attachmentCount = 1;
-    colorBlending.pAttachments = &colorBlendAttachment;
-    colorBlending.blendConstants[0] = 0.0f; // Optional
-    colorBlending.blendConstants[1] = 0.0f; // Optional
-    colorBlending.blendConstants[2] = 0.0f; // Optional
-    colorBlending.blendConstants[3] = 0.0f; // Optional
+    color_blending.logicOpEnable = VK_FALSE;
+    color_blending.logicOp = VK_LOGIC_OP_COPY; // Optional
+    color_blending.attachmentCount = 1;
+    color_blending.pAttachments = &colorBlendAttachment;
+    color_blending.blendConstants[0] = 0.0f; // Optional
+    color_blending.blendConstants[1] = 0.0f; // Optional
+    color_blending.blendConstants[2] = 0.0f; // Optional
+    color_blending.blendConstants[3] = 0.0f; // Optional
 
     VkPipelineLayoutCreateInfo pipeline_layout_info{};
     pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -740,6 +742,29 @@ private:
     if (vkCreatePipelineLayout(device_, &pipeline_layout_info, nullptr,
                                &pipeline_layout_) != VK_SUCCESS) {
       throw std::runtime_error("failed to create pipeline layout!");
+    }
+
+    VkGraphicsPipelineCreateInfo pipeline_info{};
+    pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+    pipeline_info.stageCount = 2;
+    pipeline_info.pStages = shader_stages;
+    pipeline_info.pVertexInputState = &vertex_input_info;
+    pipeline_info.pInputAssemblyState = &input_assembly;
+    pipeline_info.pViewportState = &viewport_state;
+    pipeline_info.pRasterizationState = &rasterizer;
+    pipeline_info.pMultisampleState = &multisampling;
+    pipeline_info.pDepthStencilState = nullptr; // Optional
+    pipeline_info.pColorBlendState = &color_blending;
+    pipeline_info.pDynamicState = &dynamic_state;
+    pipeline_info.layout = pipeline_layout_;
+    pipeline_info.renderPass = render_pass_;
+    pipeline_info.subpass = 0;
+    pipeline_info.basePipelineHandle = VK_NULL_HANDLE; // Optional
+    pipeline_info.basePipelineIndex = -1;              // Optional
+
+    if (vkCreateGraphicsPipelines(device_, VK_NULL_HANDLE, 1, &pipeline_info,
+                                  nullptr, &graphics_pipeline_) != VK_SUCCESS) {
+      throw std::runtime_error("failed to create graphics pipeline!");
     }
 
     vkDestroyShaderModule(device_, vert_shader_module, nullptr);
@@ -761,6 +786,10 @@ private:
     return shader_module;
   }
 
+  void createFrameBuffers() {
+
+  }
+
   void mainLoop() const {
     while (!glfwWindowShouldClose(window_)) {
       glfwPollEvents();
@@ -772,6 +801,7 @@ private:
       DestroyDebugUtilsMessengerEXT(instance_, debug_messenger_, nullptr);
     }
 
+    vkDestroyPipeline(device_, graphics_pipeline_, nullptr);
     vkDestroyPipelineLayout(device_, pipeline_layout_, nullptr);
     vkDestroyRenderPass(device_, render_pass_, nullptr);
 
@@ -803,6 +833,8 @@ private:
   std::vector<VkImageView> swap_chain_image_views_;
   VkPipelineLayout pipeline_layout_ = VK_NULL_HANDLE;
   VkRenderPass render_pass_ = VK_NULL_HANDLE;
+  VkPipeline graphics_pipeline_ = VK_NULL_HANDLE;
+  std::vector<VkFramebuffer> swap_chain_framebuffers_;
 };
 } // namespace HelloTriangle
 
