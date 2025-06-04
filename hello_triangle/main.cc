@@ -920,6 +920,8 @@ private:
       glfwPollEvents();
       drawFrame();
     }
+
+    vkDeviceWaitIdle(device_);
   }
 
   void drawFrame() {
