@@ -1,13 +1,21 @@
 #define GLFW_INCLUDE_VULKAN
+
+#include "tools/cpp/runfiles/runfiles.h"
 #include <GLFW/glfw3.h>
 #include <algorithm>
 
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <optional>
 #include <set>
 #include <vector>
+
+using bazel::tools::cpp::runfiles::Runfiles;
+
+std::unique_ptr<Runfiles> run_files;
 
 namespace HelloTriangle {
 constexpr uint32_t WIDTH = 800;
@@ -46,6 +54,23 @@ void DestroyDebugUtilsMessengerEXT(VkInstance instance,
 
 const std::vector<const char *> DEVICE_EXTENSIONS = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+
+static std::vector<char> readFile(const std::string &file_name) {
+  std::ifstream file(run_files->Rlocation(file_name),
+                     std::ios::ate | std::ios::binary);
+  if (!file.is_open()) {
+    throw std::runtime_error("failed to open file");
+  }
+
+  const size_t file_size = file.tellg();
+  std::vector<char> buffer(file_size);
+
+  file.seekg(0);
+  file.read(buffer.data(), file_size);
+
+  file.close();
+  return buffer;
+}
 
 class HelloTriangleApplication {
 public:
@@ -555,7 +580,48 @@ private:
   }
 
   void createGraphicsPipeline() {
+    auto vert_shader_code =
+        readFile("_main/hello_triangle/shaders/shader.vert.spv");
+    auto frag_shader_code =
+        readFile("_main/hello_triangle/shaders/shader.frag.spv");
 
+    VkShaderModule vert_shader_module = createShaderModule(vert_shader_code);
+    VkShaderModule frag_shader_module = createShaderModule(frag_shader_code);
+
+    VkPipelineShaderStageCreateInfo vert_shader_stage_info{};
+    vert_shader_stage_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    vert_shader_stage_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
+    vert_shader_stage_info.module = vert_shader_module;
+    vert_shader_stage_info.pName = "main";
+
+    VkPipelineShaderStageCreateInfo frag_shader_stage_info{};
+    frag_shader_stage_info.sType =
+        VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    frag_shader_stage_info.module = frag_shader_module;
+    frag_shader_stage_info.pName = "main";
+
+    VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_stage_info,
+                                                       frag_shader_stage_info};
+
+    vkDestroyShaderModule(device_, vert_shader_module, nullptr);
+    vkDestroyShaderModule(device_, frag_shader_module, nullptr);
+  }
+
+  VkShaderModule createShaderModule(const std::vector<char> &code) {
+    VkShaderModuleCreateInfo create_info{};
+    create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    create_info.codeSize = code.size();
+    create_info.pCode = reinterpret_cast<const uint32_t *>(code.data());
+
+    VkShaderModule shader_module;
+    if (vkCreateShaderModule(device_, &create_info, nullptr, &shader_module) !=
+        VK_SUCCESS) {
+      throw std::runtime_error("failed to create shader module!");
+    }
+
+    return shader_module;
   }
 
   void mainLoop() const {
@@ -598,7 +664,15 @@ private:
 };
 } // namespace HelloTriangle
 
-int main() {
+int main(int argc, char **argv) {
+  // setup runfiles
+  std::string error;
+  run_files = std::unique_ptr<Runfiles>(Runfiles::Create(argv[0], &error));
+  if (run_files == nullptr) {
+    std::cerr << error << std::endl;
+    return EXIT_FAILURE;
+  }
+
   HelloTriangle::HelloTriangleApplication app{};
 
   try {
