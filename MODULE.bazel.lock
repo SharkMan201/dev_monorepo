@@ -142,7 +142,7 @@
     "//third_party/vulkan:extensions.bzl%vulkan_module": {
       "general": {
         "bzlTransitiveDigest": "9Vm3MxCbbpFr/ZYn9zPggn3HA7qN3EI5KlT614IWSUA=",
-        "usagesDigest": "l6bvGvHQLzUa3i65mybYLRLeIHwvwWfMz04pgkStKSQ=",
+        "usagesDigest": "FCvohu9D2am4UMEDfplJaXiqql2bkP5IkickJS+9GVU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},

@@ -1,6 +1,6 @@
 module(
-    name = "dev_vulkan",
-    repo_name = "me_aeed_dev_vulkan",
+    name = "dev_monorepo",
+    repo_name = "me_aeed_dev_monorepo",
 )
 
 bazel_dep(name = "rules_cc", version = "0.1.1")
