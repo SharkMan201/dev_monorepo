@@ -203,6 +203,7 @@ private:
     createGraphicsPipeline();
     createFrameBuffers();
     createCommandPool();
+    createVertexBuffer();
     createCommandBuffers();
     createSyncObjects();
   }
@@ -882,6 +883,59 @@ private:
     }
   }
 
+  void createVertexBuffer() {
+    VkBufferCreateInfo buffer_info{};
+    buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    buffer_info.size = sizeof(vertices[0]) * vertices.size();
+    buffer_info.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+    if (vkCreateBuffer(device_, &buffer_info, nullptr, &vertex_buffer_) !=
+        VK_SUCCESS) {
+      throw std::runtime_error("failed to create vertex buffer!");
+    }
+
+    VkMemoryRequirements memory_requirements;
+    vkGetBufferMemoryRequirements(device_, vertex_buffer_,
+                                  &memory_requirements);
+
+    VkMemoryAllocateInfo allocate_info{};
+    allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    allocate_info.allocationSize = memory_requirements.size;
+    allocate_info.memoryTypeIndex =
+        findMemoryType(memory_requirements.memoryTypeBits,
+                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                           VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+    if (vkAllocateMemory(device_, &allocate_info, nullptr,
+                         &vertex_buffer_memory_) != VK_SUCCESS) {
+      throw std::runtime_error("failed to allocate vertex buffer memory!");
+    }
+
+    vkBindBufferMemory(device_, vertex_buffer_, vertex_buffer_memory_, 0);
+
+    void *data;
+    vkMapMemory(device_, vertex_buffer_memory_, 0, buffer_info.size, 0, &data);
+    memcpy(data, vertices.data(), buffer_info.size);
+    vkUnmapMemory(device_, vertex_buffer_memory_);
+  }
+
+  uint32_t findMemoryType(uint32_t type_filter,
+                          VkMemoryPropertyFlags properties) {
+    VkPhysicalDeviceMemoryProperties mem_properties;
+    vkGetPhysicalDeviceMemoryProperties(physical_device_, &mem_properties);
+
+    for (uint32_t i = 0; i < mem_properties.memoryTypeCount; i++) {
+      if ((type_filter & (1 << i)) &&
+          (mem_properties.memoryTypes[i].propertyFlags & properties) ==
+              properties) {
+        return i;
+      }
+    }
+
+    throw std::runtime_error("failed to find suitable memory type");
+  }
+
   void createCommandBuffers() {
     command_buffers_.resize(MAX_FRAMES_IN_FLIGHT);
     VkCommandBufferAllocateInfo alloc_info{};
@@ -923,6 +977,10 @@ private:
     vkCmdBindPipeline(command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS,
                       graphics_pipeline_);
 
+    VkBuffer vertex_buffers[] = {vertex_buffer_};
+    VkDeviceSize offsets[] = {0};
+    vkCmdBindVertexBuffers(command_buffer, 0, 1, vertex_buffers, offsets);
+
     VkViewport viewport{};
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -937,7 +995,7 @@ private:
     scissor.extent = swap_chain_extent_;
     vkCmdSetScissor(command_buffer, 0, 1, &scissor);
 
-    vkCmdDraw(command_buffer, 3, 1, 0, 0);
+    vkCmdDraw(command_buffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
     vkCmdEndRenderPass(command_buffer);
 
     if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS) {
@@ -1083,6 +1141,10 @@ private:
 
   void cleanup() {
     cleanupSwapChain();
+
+    vkDestroyBuffer(device_, vertex_buffer_, nullptr);
+    vkFreeMemory(device_, vertex_buffer_memory_, nullptr);
+
     if (enable_validation_layers) {
       DestroyDebugUtilsMessengerEXT(instance_, debug_messenger_, nullptr);
     }
@@ -1129,6 +1191,8 @@ private:
   std::vector<VkFence> in_flight_fences_;
   uint32_t current_frame_ = 0;
   bool framebuffer_resized_ = false;
+  VkBuffer vertex_buffer_ = VK_NULL_HANDLE;
+  VkDeviceMemory vertex_buffer_memory_ = VK_NULL_HANDLE;
 }; // namespace HelloTriangle
 } // namespace HelloTriangle
 
