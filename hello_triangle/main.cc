@@ -474,7 +474,7 @@ private:
   VkPresentModeKHR chooseSwapPresentMode(
       const std::vector<VkPresentModeKHR> &available_present_modes) {
     for (const auto &available_present_mode : available_present_modes) {
-      if (available_present_mode == VK_PRESENT_MODE_FIFO_RELAXED_KHR) {
+      if (available_present_mode == VK_PRESENT_MODE_MAILBOX_KHR) {
         return available_present_mode;
       }
     }
@@ -599,10 +599,8 @@ private:
     color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
     color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-
     color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-
     color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
