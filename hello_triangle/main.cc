@@ -3,6 +3,8 @@
 #include "tools/cpp/runfiles/runfiles.h"
 #include <GLFW/glfw3.h>
 #include <algorithm>
+#include <array>
+#include <glm/glm.hpp>
 
 #include <cstdlib>
 #include <filesystem>
@@ -72,6 +74,55 @@ static std::vector<char> readFile(const std::string &file_name) {
   file.close();
   return buffer;
 }
+
+struct QueueFamilyIndices {
+  std::optional<uint32_t> graphics_family;
+  std::optional<uint32_t> present_family;
+
+  bool isComplete() {
+    return graphics_family.has_value() && present_family.has_value();
+  }
+};
+
+struct SwapChainSupportDetails {
+  VkSurfaceCapabilitiesKHR capabilities;
+  std::vector<VkSurfaceFormatKHR> formats;
+  std::vector<VkPresentModeKHR> present_modes;
+};
+
+struct Vertex {
+  glm::vec2 pos_;
+  glm::vec3 color_;
+
+  static VkVertexInputBindingDescription getBindingDescription() {
+    VkVertexInputBindingDescription binding_description;
+    binding_description.binding = 0;
+    binding_description.stride = sizeof(Vertex);
+    binding_description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    return binding_description;
+  }
+
+  static std::array<VkVertexInputAttributeDescription, 2>
+  getAttributeDescriptions() {
+    std::array<VkVertexInputAttributeDescription, 2> attribute_descriptions{};
+    attribute_descriptions[0].binding = 0;
+    attribute_descriptions[0].location = 0;
+    attribute_descriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+    attribute_descriptions[0].offset = offsetof(Vertex, pos_);
+
+    attribute_descriptions[1].binding = 0;
+    attribute_descriptions[1].location = 1;
+    attribute_descriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attribute_descriptions[1].offset = offsetof(Vertex, color_);
+    return attribute_descriptions;
+  }
+};
+
+const std::vector<Vertex> vertices = {
+    {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+};
 
 class HelloTriangleApplication {
 public:
@@ -323,15 +374,6 @@ private:
     return score;
   }
 
-  struct QueueFamilyIndices {
-    std::optional<uint32_t> graphics_family;
-    std::optional<uint32_t> present_family;
-
-    bool isComplete() {
-      return graphics_family.has_value() && present_family.has_value();
-    }
-  };
-
   QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
     QueueFamilyIndices indices{};
 
@@ -423,12 +465,6 @@ private:
     vkGetDeviceQueue(device_, indices.present_family.value(), 0,
                      &present_queue_);
   }
-
-  struct SwapChainSupportDetails {
-    VkSurfaceCapabilitiesKHR capabilities;
-    std::vector<VkSurfaceFormatKHR> formats;
-    std::vector<VkPresentModeKHR> present_modes;
-  };
 
   SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) {
     SwapChainSupportDetails details{};
@@ -662,13 +698,17 @@ private:
     VkPipelineShaderStageCreateInfo shader_stages[] = {vert_shader_stage_info,
                                                        frag_shader_stage_info};
 
+    auto binding_description = Vertex::getBindingDescription();
+    auto attribute_descriptions = Vertex::getAttributeDescriptions();
     VkPipelineVertexInputStateCreateInfo vertex_input_info{};
     vertex_input_info.sType =
         VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertex_input_info.vertexBindingDescriptionCount = 0;
-    vertex_input_info.pVertexAttributeDescriptions = nullptr;
-    vertex_input_info.vertexAttributeDescriptionCount = 0;
-    vertex_input_info.pVertexAttributeDescriptions = nullptr;
+    vertex_input_info.vertexBindingDescriptionCount = 1;
+    vertex_input_info.pVertexBindingDescriptions = &binding_description;
+    vertex_input_info.vertexAttributeDescriptionCount =
+        static_cast<uint32_t>(attribute_descriptions.size());
+    vertex_input_info.pVertexAttributeDescriptions =
+        attribute_descriptions.data();
 
     VkPipelineInputAssemblyStateCreateInfo input_assembly{};
     input_assembly.sType =
