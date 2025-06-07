@@ -31,10 +31,10 @@ const char *vertex_shader_source =
     "}\0";
 
 const char *fragment_shader_source = "#version 330 core\n"
-                                     "in vec4 vertexColor;"
+                                     "uniform vec4 ourColor;"
                                      "out vec4 FragColor;\n"
                                      "void main() {\n"
-                                     "  FragColor =  vertexColor;\n"
+                                     "  FragColor =  ourColor;\n"
                                      "}\0";
 
 int main() {
@@ -155,6 +155,15 @@ int main() {
 
     // set openGL to use the program
     glUseProgram(shader_program);
+
+    float time_value = glfwGetTime();
+    float green_value = (sin(time_value / 2.0f)) + 0.5f;
+    // retrieve the uniform variable
+    int vertex_color_location =
+        glGetUniformLocation(shader_program, "ourColor");
+    // set the value of the uniform variable to change over time
+    glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 1.0f);
+
     // draw the triangle
     glBindVertexArray(vao);
     // no need to bind vbo & ebo because the vao keeps track of these bindings
