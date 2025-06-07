@@ -23,18 +23,19 @@ void processInput(GLFWwindow *window) {
 const char *vertex_shader_source =
     "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
-    "out vec4 vertexColor;"
+    "layout (location = 1) in vec3 aColor;\n"
+    "out vec3 ourColor;"
     "void main()\n"
     "{\n"
     "  gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-    "  vertexColor = vec4(0.5, 0.0, 0.0, 1.0);"
+    "  ourColor = aColor;\n"
     "}\0";
 
 const char *fragment_shader_source = "#version 330 core\n"
-                                     "uniform vec4 ourColor;"
+                                     "in vec3 ourColor;"
                                      "out vec4 FragColor;\n"
                                      "void main() {\n"
-                                     "  FragColor =  ourColor;\n"
+                                     "  FragColor =  vec4(ourColor, 1.0);\n"
                                      "}\0";
 
 int main() {
@@ -64,8 +65,10 @@ int main() {
   glViewport(0, 0, WIDTH, HEIGHT);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-  float vertices[] = {0.5f,  0.5f,  0.0f, 0.5f,  -0.5f, 0.0f,
-                      -0.5f, -0.5f, 0.0f, -0.5f, 0.5f,  0.0f};
+  float vertices[] = {
+      0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, -0.5f, -0.5f, 0.0f,
+      0.0f, 1.0f,  0.0f, 0.0f, 0.5f, 0.0f, 0.0f,  0.0f,  1.0f,
+  };
   unsigned int indices[] = {0, 1, 3, 1, 2, 3};
 
   unsigned int vao;
@@ -80,9 +83,15 @@ int main() {
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
   // tell openGL how to read the vertex buffer data
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
-                        static_cast<void *>(0));
+  // setup vertices (location = 0)
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                        reinterpret_cast<void *>(0));
   glEnableVertexAttribArray(0);
+
+  // setup colors (location = 1)
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                        reinterpret_cast<void *>(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
 
   // setup element buffer object
   unsigned int ebo;
@@ -167,8 +176,8 @@ int main() {
     // draw the triangle
     glBindVertexArray(vao);
     // no need to bind vbo & ebo because the vao keeps track of these bindings
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    // glDrawArrays(GL_TRIANGLES, 0, 3);
+    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
     //  glBindVertexArray(0); // no need to unbind everytime
 
     // check and call events and swap the buffers
