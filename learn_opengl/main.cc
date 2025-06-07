@@ -62,7 +62,9 @@ int main() {
   glViewport(0, 0, WIDTH, HEIGHT);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-  float vertices[] = {-0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f};
+  float vertices[] = {0.5f,  0.5f,  0.0f, 0.5f,  -0.5f, 0.0f,
+                      -0.5f, -0.5f, 0.0f, -0.5f, 0.5f,  0.0f};
+  unsigned int indices[] = {0, 1, 3, 1, 2, 3};
 
   unsigned int vao;
   glGenVertexArrays(1, &vao);
@@ -80,9 +82,18 @@ int main() {
                         static_cast<void *>(0));
   glEnableVertexAttribArray(0);
 
+  // setup element buffer object
+  unsigned int ebo;
+  glGenBuffers(1, &ebo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+               GL_STATIC_DRAW);
+
   // unbinding buffer & array objects
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glBindVertexArray(0);
+  glBindVertexArray(NULL); // needs to be unbound first to not record unbinding
+                           // the ebos
+  glBindBuffer(GL_ARRAY_BUFFER, NULL);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
 
   // create shaders
   unsigned int vertex_shader;
@@ -144,8 +155,10 @@ int main() {
     glUseProgram(shader_program);
     // draw the triangle
     glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    // glBindVertexArray(0); // no need to unbind everytime
+    // no need to bind vbo & ebo because the vao keeps track of these bindings
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    // glDrawArrays(GL_TRIANGLES, 0, 3);
+    //  glBindVertexArray(0); // no need to unbind everytime
 
     // check and call events and swap the buffers
     glfwSwapBuffers(window);
