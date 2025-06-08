@@ -17,10 +17,10 @@ public:
   // constructor to read and build the shaders
   Shader(const char *vertex_path, const char *fragment_path) {
     // 1. retrieve the vertex/fragment source code from file_path
-    const char *vertex_code =
-        FilesUtils::FileReader::readFile(vertex_path).c_str();
-    const char *fragment_code =
-        FilesUtils::FileReader::readFile(fragment_path).c_str();
+    std::string vertex_code =
+        FilesUtils::FileReader::readFile(vertex_path);
+    std::string fragment_code =
+        FilesUtils::FileReader::readFile(fragment_path);
 
     // 2. compile shaders
     uint32_t vertex = compileShader(GL_VERTEX_SHADER, vertex_code);
@@ -62,14 +62,15 @@ public:
   void destroy() { glDeleteProgram(id_); }
 
 private:
-  uint32_t compileShader(int shader_type, const char *shader_code) {
+  uint32_t compileShader(int shader_type, std::string shader_code) {
     uint32_t shader;
     int success;
     char info_log[512];
 
     // vertex shader
     shader = glCreateShader(shader_type);
-    glShaderSource(shader, 1, &shader_code, nullptr);
+    const char* code_c_str = shader_code.c_str();
+    glShaderSource(shader, 1, &code_c_str, nullptr);
     glCompileShader(shader);
 
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);

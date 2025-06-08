@@ -98,6 +98,8 @@ int main() {
   glBindBuffer(GL_ARRAY_BUFFER, NULL);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
 
+  // setup stbi to flip image y-axis by default
+  stbi_set_flip_vertically_on_load(true);
   // load texture1
   unsigned int texture1;
   glGenTextures(1, &texture1);
