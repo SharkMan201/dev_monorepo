@@ -5,6 +5,9 @@ load("//third_party/opengl:linkopts.bzl", "OPENGL_LINKOPTS")
 cc_binary(
     name = "learn_opengl",
     srcs = ["main.cc"],
+    data = [
+        "//learn_opengl/textures",
+    ],
     linkopts = OPENGL_LINKOPTS,
     deps = [
         "//learn_opengl/shaders",
