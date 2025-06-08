@@ -10,6 +10,7 @@ cc_binary(
         "//learn_opengl/shaders",
         "//third_party/glad",
         "//third_party/glfw",
+        "//third_party/stb_image",
     ],
 )
 

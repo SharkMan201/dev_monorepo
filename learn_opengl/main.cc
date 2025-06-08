@@ -3,6 +3,7 @@
 //
 #include "learn_opengl/shaders/shader.h"
 #include "third_party/glad/include/glad/glad.h"
+#include "third_party/stb_image/stb_image.h"
 
 #include <GLFW/glfw3.h>
 #include <iostream>
