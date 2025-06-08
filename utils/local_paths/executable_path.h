@@ -17,7 +17,6 @@
 #include <limits.h>
 #include <unistd.h>
 #endif
-namespace FilesUtils {
 inline std::string getExecutablePath() {
 #if defined(_WIN32)
   char buffer[MAX_PATH];
@@ -43,6 +42,5 @@ inline std::string getExecutablePath() {
   }
   return {buffer, count};
 #endif
-}
-} // namespace FilesUtils
+} // namespace LocalPaths
 #endif // EXECUTABLE_PATH_H

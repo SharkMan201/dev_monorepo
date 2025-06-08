@@ -5,15 +5,13 @@
 #ifndef FILE_READER_H
 #define FILE_READER_H
 
-#include "tools/cpp/runfiles/runfiles.h"
-#include "utils/files/executable_path.h"
+#include "utils/local_paths/local_paths.h"
 
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 
 namespace FilesUtils {
-using bazel::tools::cpp::runfiles::Runfiles;
 class FileReader {
 public:
   FileReader(const FileReader &) = delete;
@@ -21,7 +19,7 @@ public:
 
   static std::string readFile(const std::string &path) {
     FileReader *reader = getInstance();
-    std::ifstream file(reader->runfiles_->Rlocation(path),
+    std::ifstream file(LocalPaths::getLocalPath(path),
                        std::ios::ate | std::ios::binary);
 
     // todo, better error handling ?
@@ -40,15 +38,7 @@ public:
   }
 
 private:
-  FileReader() {
-    const std::string &exec_path = getExecutablePath();
-    std::string error;
-    runfiles_ = std::unique_ptr<Runfiles>(Runfiles::Create(exec_path, &error));
-    // Todo better way to error handle
-    if (runfiles_ == nullptr) {
-      throw std::runtime_error("Failed to create runfiles");
-    }
-  }
+  FileReader() = default;
 
   static FileReader *getInstance() {
     if (!file_reader_) {
@@ -59,7 +49,6 @@ private:
   }
 
   static FileReader *file_reader_;
-  std::unique_ptr<Runfiles> runfiles_;
 };
 
 FileReader *FileReader::file_reader_;

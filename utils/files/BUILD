@@ -1,11 +1,11 @@
 cc_library(
     name = "files",
     hdrs = [
-        "executable_path.h",
         "file_reader.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
+        "//utils/local_paths",
         "@bazel_tools//tools/cpp/runfiles",
     ],
 )
