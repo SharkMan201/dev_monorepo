@@ -98,13 +98,11 @@ int main() {
   glBindBuffer(GL_ARRAY_BUFFER, NULL);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, NULL);
 
-  // create shaders
-  Shader our_shader("_main/learn_opengl/shaders/shader.vert",
-                    "_main/learn_opengl/shaders/shader.frag");
-
-  unsigned int texture;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
+  // load texture1
+  unsigned int texture1;
+  glGenTextures(1, &texture1);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture1);
   // set texture wrapping/filtering options
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -112,7 +110,6 @@ int main() {
                   GL_LINEAR_MIPMAP_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-  // load texture
   int width, height, nr_channels;
   unsigned char *image_data = stbi_load(
       LocalPaths::getLocalPath("_main/learn_opengl/textures/container.jpg")
@@ -128,6 +125,39 @@ int main() {
 
   stbi_image_free(image_data);
 
+  // load texture2
+  unsigned int texture2;
+  glGenTextures(1, &texture2);
+  glActiveTexture(GL_TEXTURE1);
+  glBindTexture(GL_TEXTURE_2D, texture2);
+  // set texture wrapping/filtering options
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                  GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  image_data = stbi_load(
+      LocalPaths::getLocalPath("_main/learn_opengl/textures/awesomeface.png")
+          .c_str(),
+      &width, &height, &nr_channels, 0);
+  if (!image_data) {
+    std::cerr << "Failed to load texture" << std::endl;
+    return -1;
+  }
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA,
+               GL_UNSIGNED_BYTE, image_data);
+  glGenerateMipmap(GL_TEXTURE_2D);
+
+  stbi_image_free(image_data);
+
+  // create shaders
+  Shader our_shader("_main/learn_opengl/shaders/shader.vert",
+                    "_main/learn_opengl/shaders/shader.frag");
+  our_shader.use(); // need to activate the shader before setting the uniforms
+  our_shader.setInt("texture1", 0);
+  our_shader.setInt("texture2", 1);
+
   while (!glfwWindowShouldClose(window)) {
     // input
     processInput(window);
@@ -142,7 +172,10 @@ int main() {
     our_shader.use();
 
     // draw the triangle
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture2);
     glBindVertexArray(vao);
     // glDrawArrays(GL_TRIANGLES, 0, 3);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);

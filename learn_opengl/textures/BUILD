@@ -1,5 +1,8 @@
 filegroup(
     name = "textures",
-    srcs = ["container.jpg"],
+    srcs = [
+        "awesomeface.png",
+        "container.jpg",
+    ],
     visibility = ["//visibility:public"],
 )
