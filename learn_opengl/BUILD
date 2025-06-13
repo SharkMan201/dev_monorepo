@@ -14,6 +14,7 @@ cc_binary(
         "//third_party/glad",
         "//third_party/glfw",
         "//third_party/stb_image",
+        "@glm",
     ],
 )
 

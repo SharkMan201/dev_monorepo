@@ -4,6 +4,9 @@
 #include "learn_opengl/shaders/shader.h"
 #include "third_party/glad/include/glad/glad.h"
 #include "third_party/stb_image/stb_image.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -172,6 +175,13 @@ int main() {
 
     // set openGL to use the program
     our_shader.use();
+
+    // transformations
+    auto trans = glm::mat4(1.0f);
+    trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+    trans = glm::rotate(trans, static_cast<float>(glfwGetTime()),
+                        glm::vec3(0.0, 0.0, 1.0));
+    our_shader.setMatrix("transform", trans);
 
     // draw the triangle
     glActiveTexture(GL_TEXTURE0);

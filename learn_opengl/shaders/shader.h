@@ -7,6 +7,8 @@
 #include "third_party/glad/include/glad/glad.h"
 #include "utils/files/file_reader.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <string>
 
 class Shader {
@@ -17,10 +19,8 @@ public:
   // constructor to read and build the shaders
   Shader(const char *vertex_path, const char *fragment_path) {
     // 1. retrieve the vertex/fragment source code from file_path
-    std::string vertex_code =
-        FilesUtils::FileReader::readFile(vertex_path);
-    std::string fragment_code =
-        FilesUtils::FileReader::readFile(fragment_path);
+    std::string vertex_code = FilesUtils::FileReader::readFile(vertex_path);
+    std::string fragment_code = FilesUtils::FileReader::readFile(fragment_path);
 
     // 2. compile shaders
     uint32_t vertex = compileShader(GL_VERTEX_SHADER, vertex_code);
@@ -59,6 +59,11 @@ public:
     glUniform1f(glGetUniformLocation(id_, name.c_str()), value);
   }
 
+  void setMatrix(const std::string &name, const glm::mat4 &value) {
+    glUniformMatrix4fv(glGetUniformLocation(id_, name.c_str()), 1, GL_FALSE,
+                       glm::value_ptr(value));
+  }
+
   void destroy() { glDeleteProgram(id_); }
 
 private:
@@ -69,7 +74,7 @@ private:
 
     // vertex shader
     shader = glCreateShader(shader_type);
-    const char* code_c_str = shader_code.c_str();
+    const char *code_c_str = shader_code.c_str();
     glShaderSource(shader, 1, &code_c_str, nullptr);
     glCompileShader(shader);
 
