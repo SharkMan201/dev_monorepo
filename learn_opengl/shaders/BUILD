@@ -3,6 +3,7 @@ cc_library(
     hdrs = ["shader.h"],
     data = [
         "light_shader.frag",
+        "light_shader.vert",
         "shader.frag",
         "shader.vert",
     ],

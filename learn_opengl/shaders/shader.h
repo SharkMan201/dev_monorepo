@@ -69,6 +69,10 @@ public:
     glUniform3f(glGetUniformLocation(id_, name.c_str()), v0, v1, v2);
   }
 
+  void setVec3(const std::string &name, const glm::vec3 &value) {
+    setVec3(name, value.x, value.y, value.z);
+  }
+
   void destroy() { glDeleteProgram(id_); }
 
 private:
