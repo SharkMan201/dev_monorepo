@@ -64,6 +64,11 @@ public:
                        glm::value_ptr(value));
   }
 
+  void setVec3(const std::string &name, const float v0, const float v1,
+               const float v2) {
+    glUniform3f(glGetUniformLocation(id_, name.c_str()), v0, v1, v2);
+  }
+
   void destroy() { glDeleteProgram(id_); }
 
 private:
