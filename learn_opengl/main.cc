@@ -19,10 +19,25 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height) {
   glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow *window) {
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE)) {
+// camera vars
+glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 camera_front = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
+
+void processInput(GLFWwindow *window, float delta_time) {
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE))
     glfwSetWindowShouldClose(window, true);
-  }
+  const float camera_speed = 2.5f * delta_time;
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    camera_pos += camera_speed * camera_front;
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    camera_pos -= camera_speed * camera_front;
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    camera_pos -=
+        glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    camera_pos +=
+        glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
 }
 
 int main() {
@@ -183,9 +198,16 @@ int main() {
 
   glEnable(GL_DEPTH_TEST);
 
+  float delta_time = 0.0f;
+  float last_frame = 0.0f;
+
   while (!glfwWindowShouldClose(window)) {
+    // calculate delta
+    float current_frame = glfwGetTime();
+    delta_time = current_frame - last_frame;
+    last_frame= current_frame;
     // input
-    processInput(window);
+    processInput(window, delta_time);
 
     // rendering commands
     // ------
@@ -202,12 +224,7 @@ int main() {
     // Model: transformation in the world space
     // View: transformation to a view space (Camera (inverse?))
     // Projection: apply perspective/orthogonal projections
-    const float radius = 10.0f;
-    float cam_x = sin(glfwGetTime()) * radius;
-    float cam_z = cos(glfwGetTime()) * radius;
-    auto view =
-        glm::lookAt(glm::vec3(cam_x, 0.0f, cam_z), glm::vec3(0.0f, 0.0f, 0.0f),
-                    glm::vec3(0.0f, 1.0f, 0.0f));
+    auto view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
     our_shader.setMatrix("view", view);
 
     auto projection =
@@ -223,7 +240,7 @@ int main() {
     for (auto i = 0; i < 10; i++) {
       auto model = glm::mat4(1.0f);
       model = glm::translate(model, cube_positions[i]);
-      auto angle = 20.0f * i;// static_cast<float>(glfwGetTime());
+      auto angle = 20.0f * i; // static_cast<float>(glfwGetTime());
       model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
       our_shader.setMatrix("model", model);
 
