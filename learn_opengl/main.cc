@@ -208,6 +208,7 @@ int main() {
     our_shader.setMatrix("view", camera.getViewMatrix());
     our_shader.setMatrix("projection", projection);
     our_shader.setVec3("lightPos", light_pos);
+    our_shader.setVec3("viewPos", camera.getPosition());
 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 36);
