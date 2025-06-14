@@ -158,9 +158,6 @@ int main() {
   // create shaders
   Shader our_shader("_main/learn_opengl/shaders/shader.vert",
                     "_main/learn_opengl/shaders/shader.frag");
-  our_shader.use(); // need to activate the shader before setting the uniforms
-  our_shader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-  our_shader.setVec3("lightColor", 1.0f, 1.0f, 1.0);
 
   Shader lighting_cube_shader("_main/learn_opengl/shaders/light_shader.vert",
                               "_main/learn_opengl/shaders/light_shader.frag");
@@ -201,14 +198,32 @@ int main() {
 
     // draw the cube
     model = glm::mat4(1.0f);
-    model = glm::rotate(model, 20 * float(glm::radians(glfwGetTime())),
-                        glm::vec3(0.0f, 1.0f, 0.0f));
-    our_shader.use();
+    // model = glm::rotate(model, 20 * float(glm::radians(glfwGetTime())),
+    //                     glm::vec3(0.0f, 1.0f, 0.0f));
+    our_shader.use();  // need to activate the shader before setting the uniforms
+    our_shader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+    our_shader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+    our_shader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+    our_shader.setFloat("material.shininess", 32.0f);
+
+    glm::vec3 light_color;
+    light_color.r = sin(glfwGetTime() * 2.0f);
+    light_color.g = sin(glfwGetTime() * 0.7f);
+    light_color.b = sin(glfwGetTime() * 1.3f);
+
+    glm::vec3 diffuse_color = light_color * glm::vec3(0.5f);
+    glm::vec3 ambient_color = diffuse_color * glm::vec3(0.2f);
+
+    our_shader.setVec3("light.ambient", ambient_color);
+    our_shader.setVec3("light.diffuse", diffuse_color);
+    our_shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+    our_shader.setVec3("light.position", light_pos);
+
+    our_shader.setVec3("viewPos", camera.getPosition());
+
     our_shader.setMatrix("model", model);
     our_shader.setMatrix("view", camera.getViewMatrix());
     our_shader.setMatrix("projection", projection);
-    our_shader.setVec3("lightPos", light_pos);
-    our_shader.setVec3("viewPos", camera.getPosition());
 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 36);
