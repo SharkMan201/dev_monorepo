@@ -89,7 +89,6 @@ unsigned int loadTexture(const std::string &path) {
   } else {
     const std::string err_message =
         "Texture failed to load at path " + path + "\n";
-    std::cout << err_message << std::flush;
     stbi_image_free(data);
     throw std::runtime_error(err_message);
   }
@@ -203,8 +202,10 @@ int solve() {
                         reinterpret_cast<void *>(0));
   glEnableVertexAttribArray(0);
 
-  // diffuse map setup
+  // light maps setup
   auto diffuse_map = loadTexture("_main/learn_opengl/textures/container2.png");
+  auto specular_map =
+      loadTexture("_main/learn_opengl/textures/container2_specular.png");
 
   // create shaders
   Shader our_shader("_main/learn_opengl/shaders/shader.vert",
@@ -253,7 +254,7 @@ int solve() {
     //                     glm::vec3(0.0f, 1.0f, 0.0f));
     our_shader.use(); // need to activate the shader before setting the uniforms
     our_shader.setInt("material.diffuse", 0);
-    our_shader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+    our_shader.setInt("material.specular", 1);
     our_shader.setFloat("material.shininess", 32.0f);
 
     our_shader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
@@ -270,6 +271,8 @@ int solve() {
     // set up the diffuse map
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, diffuse_map);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, specular_map);
 
     glBindVertexArray(vao);
     glDrawArrays(GL_TRIANGLES, 0, 36);
