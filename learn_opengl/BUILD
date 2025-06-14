@@ -4,7 +4,10 @@ load("//third_party/opengl:linkopts.bzl", "OPENGL_LINKOPTS")
 
 cc_binary(
     name = "learn_opengl",
-    srcs = ["main.cc"],
+    srcs = [
+        "camera.h",
+        "main.cc",
+    ],
     data = [
         "//learn_opengl/textures",
     ],

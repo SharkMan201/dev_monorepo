@@ -1,6 +1,7 @@
 //
 // Created by abdoe on 6/06/2025.
 //
+#include "learn_opengl/camera.h"
 #include "learn_opengl/shaders/shader.h"
 #include "third_party/glad/include/glad/glad.h"
 #include "third_party/stb_image/stb_image.h"
@@ -19,33 +20,25 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height) {
   glViewport(0, 0, width, height);
 }
 
-// camera vars
-glm::vec3 camera_pos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 camera_front = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 camera_up = glm::vec3(0.0f, 1.0f, 0.0f);
+// camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
 void processInput(GLFWwindow *window, float delta_time) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE))
     glfwSetWindowShouldClose(window, true);
-  const float camera_speed = 2.5f * delta_time;
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    camera_pos += camera_speed * camera_front;
+    camera.processKeyboard(CAMERA_MOVEMENT::FORWARD, delta_time);
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    camera_pos -= camera_speed * camera_front;
+    camera.processKeyboard(CAMERA_MOVEMENT::BACKWARD, delta_time);
   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    camera_pos -=
-        glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
+    camera.processKeyboard(CAMERA_MOVEMENT::LEFT, delta_time);
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    camera_pos +=
-        glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
+    camera.processKeyboard(CAMERA_MOVEMENT::RIGHT, delta_time);
 }
 // store mouse data
 float last_x = 400; // middle of the screen
 float last_y = 300;
-float pitch = 0.0f;
-float yaw = -90.0f;
 bool first_mouse = true;
-float fov = 45.0f;
 
 void mouseCallback(GLFWwindow *window, double x_pos, double y_pos) {
   if (first_mouse) {
@@ -54,34 +47,15 @@ void mouseCallback(GLFWwindow *window, double x_pos, double y_pos) {
     last_y = y_pos;
   }
   float x_offest = x_pos - last_x;
-  float y_offset = y_pos - last_y;
+  float y_offset = last_y - y_pos;
   last_x = x_pos;
   last_y = y_pos;
-  const float sensitivity = 0.1f;
-  x_offest *= sensitivity;
-  y_offset *= sensitivity;
 
-  yaw += x_offest;
-  pitch -= y_offset;
-
-  if (pitch > 89.0f)
-    pitch = 89.0f;
-  if (pitch < -89.0f)
-    pitch = -89.0f;
-
-  glm::vec3 camera_direction;
-  camera_direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-  camera_direction.y = sin(glm::radians(pitch));
-  camera_direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-  camera_front = glm::normalize(camera_direction);
+  camera.processMouseMovement(x_offest, y_offset);
 }
 
 void scrollCallback(GLFWwindow *window, double x_offset, double y_offset) {
-  fov -= static_cast<float>(y_offset);
-  if (fov < 1.0f)
-    fov = 1.0f;
-  if (fov > 45.0f)
-    fov = 45.0f;
+  camera.processMouseScroll(static_cast<float>(y_offset));
 }
 
 int main() {
@@ -273,11 +247,10 @@ int main() {
     // Model: transformation in the world space
     // View: transformation to a view space (Camera (inverse?))
     // Projection: apply perspective/orthogonal projections
-    auto view = glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
-    our_shader.setMatrix("view", view);
+    our_shader.setMatrix("view", camera.getViewMatrix());
 
-    auto projection =
-        glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
+    auto projection = glm::perspective(glm::radians(camera.getFov()),
+                                       800.0f / 600.0f, 0.1f, 100.0f);
     our_shader.setMatrix("projection", projection);
 
     // draw the triangle
