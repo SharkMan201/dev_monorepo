@@ -39,6 +39,50 @@ void processInput(GLFWwindow *window, float delta_time) {
     camera_pos +=
         glm::normalize(glm::cross(camera_front, camera_up)) * camera_speed;
 }
+// store mouse data
+float last_x = 400; // middle of the screen
+float last_y = 300;
+float pitch = 0.0f;
+float yaw = -90.0f;
+bool first_mouse = true;
+float fov = 45.0f;
+
+void mouseCallback(GLFWwindow *window, double x_pos, double y_pos) {
+  if (first_mouse) {
+    first_mouse = false;
+    last_x = x_pos;
+    last_y = y_pos;
+  }
+  float x_offest = x_pos - last_x;
+  float y_offset = y_pos - last_y;
+  last_x = x_pos;
+  last_y = y_pos;
+  const float sensitivity = 0.1f;
+  x_offest *= sensitivity;
+  y_offset *= sensitivity;
+
+  yaw += x_offest;
+  pitch -= y_offset;
+
+  if (pitch > 89.0f)
+    pitch = 89.0f;
+  if (pitch < -89.0f)
+    pitch = -89.0f;
+
+  glm::vec3 camera_direction;
+  camera_direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+  camera_direction.y = sin(glm::radians(pitch));
+  camera_direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+  camera_front = glm::normalize(camera_direction);
+}
+
+void scrollCallback(GLFWwindow *window, double x_offset, double y_offset) {
+  fov -= static_cast<float>(y_offset);
+  if (fov < 1.0f)
+    fov = 1.0f;
+  if (fov > 45.0f)
+    fov = 45.0f;
+}
 
 int main() {
   glfwInit();
@@ -58,6 +102,11 @@ int main() {
     return -1;
   }
   glfwMakeContextCurrent(window);
+
+  // capture the mouse
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetCursorPosCallback(window, mouseCallback);
+  glfwSetScrollCallback(window, scrollCallback);
 
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     std::cerr << "Failed to initialize GLAD" << std::endl;
@@ -205,7 +254,7 @@ int main() {
     // calculate delta
     float current_frame = glfwGetTime();
     delta_time = current_frame - last_frame;
-    last_frame= current_frame;
+    last_frame = current_frame;
     // input
     processInput(window, delta_time);
 
@@ -228,7 +277,7 @@ int main() {
     our_shader.setMatrix("view", view);
 
     auto projection =
-        glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+        glm::perspective(glm::radians(fov), 800.0f / 600.0f, 0.1f, 100.0f);
     our_shader.setMatrix("projection", projection);
 
     // draw the triangle
