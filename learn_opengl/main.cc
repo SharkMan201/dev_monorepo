@@ -202,10 +202,12 @@ int main() {
     // Model: transformation in the world space
     // View: transformation to a view space (Camera (inverse?))
     // Projection: apply perspective/orthogonal projections
-    auto view = glm::mat4(1.0f);
-    // note that we're translating the scene in the reverse direction of where
-    // we want to move
-    view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    const float radius = 10.0f;
+    float cam_x = sin(glfwGetTime()) * radius;
+    float cam_z = cos(glfwGetTime()) * radius;
+    auto view =
+        glm::lookAt(glm::vec3(cam_x, 0.0f, cam_z), glm::vec3(0.0f, 0.0f, 0.0f),
+                    glm::vec3(0.0f, 1.0f, 0.0f));
     our_shader.setMatrix("view", view);
 
     auto projection =
@@ -221,7 +223,7 @@ int main() {
     for (auto i = 0; i < 10; i++) {
       auto model = glm::mat4(1.0f);
       model = glm::translate(model, cube_positions[i]);
-      auto angle = static_cast<float>(glfwGetTime());
+      auto angle = 20.0f * i;// static_cast<float>(glfwGetTime());
       model = glm::rotate(model, angle, glm::vec3(1.0f, 0.3f, 0.5f));
       our_shader.setMatrix("model", model);
 
