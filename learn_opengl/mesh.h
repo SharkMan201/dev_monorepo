@@ -58,6 +58,8 @@ public:
       glBindTexture(GL_TEXTURE_2D, textures_[i].id);
     }
 
+    shader.setFloat("material.shininess", 32.0f);
+
     glActiveTexture(GL_TEXTURE0);
 
     // draw mesh

@@ -96,7 +96,7 @@ int solve() {
 
   // create shaders
   Shader our_shader("_main/learn_opengl/shaders/shader.vert",
-                    "_main/learn_opengl/shaders/simple_shader.frag");
+                    "_main/learn_opengl/shaders/shader.frag");
 
   glEnable(GL_DEPTH_TEST);
 
@@ -124,6 +124,17 @@ int solve() {
     our_shader.use(); // need to activate the shader before setting the uniforms
     our_shader.setMatrix("view", camera.getViewMatrix());
     our_shader.setMatrix("projection", projection);
+
+    // set up a point light
+    our_shader.setVec3("pointLights[0].position", 1.2f, 3.0f, 1.0f);
+    our_shader.setFloat("pointLights[0].constant", 1.0f);
+    our_shader.setFloat("pointLights[0].linear", 0.09f);
+    our_shader.setFloat("pointLights[0].quadratic", 0.032f);
+    our_shader.setVec3("pointLights[0].ambient", 0.2f, 0.2f, 0.2f);
+    our_shader.setVec3("pointLights[0].diffuse", 0.5f, 0.5f, 0.5f);
+    our_shader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+
+    our_shader.setVec3("viewPos", camera.getPosition());
 
     // render the loaded model
     glm::mat4 model = glm::mat4(1.0f);
