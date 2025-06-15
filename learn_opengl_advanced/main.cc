@@ -153,7 +153,7 @@ int main() {
                       "_main/learn_opengl_advanced/textures/marble.jpg")
                       .c_str());
   unsigned int floorTexture = loadTexture(
-      LocalPaths::getLocalPath("_main/learn_opengl_advanced/textures/metal.jpg")
+      LocalPaths::getLocalPath("_main/learn_opengl_advanced/textures/metal.png")
           .c_str());
 
   // shader configuration
