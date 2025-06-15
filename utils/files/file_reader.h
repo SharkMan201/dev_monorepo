@@ -19,8 +19,8 @@ public:
 
   static std::string readFile(const std::string &path) {
     FileReader *reader = getInstance();
-    std::ifstream file(LocalPaths::getLocalPath(path),
-                       std::ios::ate | std::ios::binary);
+    auto local_path = LocalPaths::getLocalPath(path);
+    std::ifstream file(local_path, std::ios::ate | std::ios::binary);
 
     // todo, better error handling ?
     if (!file.is_open()) {

@@ -28,13 +28,13 @@ void processInput(GLFWwindow *window, float delta_time) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE))
     glfwSetWindowShouldClose(window, true);
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    camera.processKeyboard(CAMERA_MOVEMENT::FORWARD, delta_time);
+    camera.ProcessKeyboard(CAMERA_MOVEMENT::FORWARD, delta_time);
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    camera.processKeyboard(CAMERA_MOVEMENT::BACKWARD, delta_time);
+    camera.ProcessKeyboard(CAMERA_MOVEMENT::BACKWARD, delta_time);
   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    camera.processKeyboard(CAMERA_MOVEMENT::LEFT, delta_time);
+    camera.ProcessKeyboard(CAMERA_MOVEMENT::LEFT, delta_time);
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    camera.processKeyboard(CAMERA_MOVEMENT::RIGHT, delta_time);
+    camera.ProcessKeyboard(CAMERA_MOVEMENT::RIGHT, delta_time);
 }
 // store mouse data
 float last_x = 400; // middle of the screen
@@ -52,11 +52,11 @@ void mouseCallback(GLFWwindow *window, double x_pos, double y_pos) {
   last_x = x_pos;
   last_y = y_pos;
 
-  camera.processMouseMovement(x_offest, y_offset);
+  camera.ProcessMouseMovement(x_offest, y_offset);
 }
 
 void scrollCallback(GLFWwindow *window, double x_offset, double y_offset) {
-  camera.processMouseScroll(static_cast<float>(y_offset));
+  camera.ProcessMouseScroll(static_cast<float>(y_offset));
 }
 
 int solve() {
@@ -119,11 +119,11 @@ int solve() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    auto projection = glm::perspective(glm::radians(camera.getFov()),
+    auto projection = glm::perspective(glm::radians(camera.GetFov()),
                                        800.0f / 600.0f, 0.1f, 100.0f);
     our_shader.use(); // need to activate the shader before setting the uniforms
-    our_shader.setMatrix("view", camera.getViewMatrix());
-    our_shader.setMatrix("projection", projection);
+    our_shader.setMat4("view", camera.GetViewMatrix());
+    our_shader.setMat4("projection", projection);
 
     // set up a point light
     our_shader.setVec3("pointLights[0].position", 1.2f, 3.0f, 1.0f);
@@ -134,13 +134,13 @@ int solve() {
     our_shader.setVec3("pointLights[0].diffuse", 0.5f, 0.5f, 0.5f);
     our_shader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
 
-    our_shader.setVec3("viewPos", camera.getPosition());
+    our_shader.setVec3("viewPos", camera.GetPosition());
 
     // render the loaded model
     glm::mat4 model = glm::mat4(1.0f);
     model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
     model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-    our_shader.setMatrix("model", model);
+    our_shader.setMat4("model", model);
     our_model.Draw(our_shader);
 
     // check and call events and swap the buffers

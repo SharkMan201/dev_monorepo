@@ -31,7 +31,7 @@ public:
     world_up_ = up;
     yaw_ = yaw;
     pitch_ = pitch;
-    updateCameraVectors();
+    UpdateCameraVectors();
   }
   // constructor with scalar values
   Camera(float pos_x, float pos_y, float pos_z, float up_x, float up_y,
@@ -42,20 +42,20 @@ public:
     world_up_ = glm::vec3(up_x, up_y, up_z);
     yaw_ = yaw;
     pitch_ = pitch;
-    updateCameraVectors();
+    UpdateCameraVectors();
   }
 
-  glm::mat4 getViewMatrix() {
+  glm::mat4 GetViewMatrix() {
     return glm::lookAt(position_, position_ + front_, up_);
   }
 
-  glm::vec3 getPosition() { return position_; }
+  glm::vec3 GetPosition() { return position_; }
 
-  float getFov() { return fov_; }
+  float GetFov() { return fov_; }
 
-  glm::vec3 getFront() { return front_; }
+  glm::vec3 GetFront() { return front_; }
 
-  void processKeyboard(CAMERA_MOVEMENT direction, float delta_time) {
+  void ProcessKeyboard(CAMERA_MOVEMENT direction, float delta_time) {
     float velocity = delta_time * movement_speed_;
     switch (direction) {
     case FORWARD:
@@ -73,7 +73,7 @@ public:
     }
   }
 
-  void processMouseMovement(float x_offset, float y_offset,
+  void ProcessMouseMovement(float x_offset, float y_offset,
                             GLboolean constrainPitch = true) {
     x_offset *= mouse_sensitivity_;
     y_offset *= mouse_sensitivity_;
@@ -88,10 +88,10 @@ public:
         pitch_ = -89.0f;
     }
 
-    updateCameraVectors();
+    UpdateCameraVectors();
   }
 
-  void processMouseScroll(float y_offset) {
+  void ProcessMouseScroll(float y_offset) {
     fov_ -= y_offset;
     if (fov_ < 1.0f)
       fov_ = 1.0f;
@@ -100,7 +100,7 @@ public:
   }
 
 private:
-  void updateCameraVectors() {
+  void UpdateCameraVectors() {
     glm::vec3 front;
     front.x = cos(glm::radians(yaw_)) * cos(glm::radians(pitch_));
     front.y = sin(glm::radians(pitch_));
