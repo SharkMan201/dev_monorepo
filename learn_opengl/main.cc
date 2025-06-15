@@ -263,10 +263,13 @@ int solve() {
     our_shader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
     our_shader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
     our_shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-    our_shader.setVec3("light.position", light_pos);
+    our_shader.setVec3("light.position", camera.getPosition());
     our_shader.setFloat("light.constant", 1.0f);
     our_shader.setFloat("light.linear", 0.09f);
     our_shader.setFloat("light.quadratic", 0.032f);
+    our_shader.setVec3("light.direction", camera.getFront());
+    our_shader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
+    our_shader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
 
     our_shader.setVec3("viewPos", camera.getPosition());
 

@@ -49,11 +49,11 @@ public:
     return glm::lookAt(position_, position_ + front_, up_);
   }
 
-  glm::vec3 getPosition() {
-    return position_;
-  }
+  glm::vec3 getPosition() { return position_; }
 
   float getFov() { return fov_; }
+
+  glm::vec3 getFront() { return front_; }
 
   void processKeyboard(CAMERA_MOVEMENT direction, float delta_time) {
     float velocity = delta_time * movement_speed_;
