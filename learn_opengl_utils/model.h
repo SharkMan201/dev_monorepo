@@ -4,8 +4,8 @@
 
 #ifndef MODEL_H
 #define MODEL_H
-#include "learn_opengl/mesh.h"
-#include "learn_opengl/shaders/shader.h"
+#include "learn_opengl_utils/mesh.h"
+#include "learn_opengl_utils/shader.h"
 #include "third_party/stb_image/stb_image.h"
 
 #include "third_party/assimp/include/assimp/Importer.hpp"

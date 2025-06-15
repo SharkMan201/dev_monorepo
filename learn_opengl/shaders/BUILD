@@ -1,7 +1,6 @@
-cc_library(
+filegroup(
     name = "shaders",
-    hdrs = ["shader.h"],
-    data = [
+    srcs = [
         "light_shader.frag",
         "light_shader.vert",
         "shader.frag",
@@ -9,7 +8,4 @@ cc_library(
         "simple_shader.frag",
     ],
     visibility = ["//visibility:public"],
-    deps = [
-        "//utils/files",
-    ],
 )

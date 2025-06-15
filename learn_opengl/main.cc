@@ -1,9 +1,9 @@
 //
 // Created by abdoe on 6/06/2025.
 //
-#include "learn_opengl/camera.h"
-#include "learn_opengl/model.h"
-#include "learn_opengl/shaders/shader.h"
+#include "learn_opengl_utils/camera.h"
+#include "learn_opengl_utils/model.h"
+#include "learn_opengl_utils/shader.h"
 #include "third_party/glad/include/glad/glad.h"
 #include "third_party/stb_image/stb_image.h"
 #include <glm/glm.hpp>

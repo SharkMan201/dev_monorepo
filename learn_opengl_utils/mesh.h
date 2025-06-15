@@ -4,7 +4,7 @@
 
 #ifndef MESH_H
 #define MESH_H
-#include "learn_opengl/shaders/shader.h"
+#include "learn_opengl_utils/shader.h"
 
 #include <glm/glm.hpp>
 #include <string>
