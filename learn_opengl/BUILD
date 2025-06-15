@@ -7,6 +7,7 @@ cc_binary(
     srcs = [
         "camera.h",
         "main.cc",
+        "mesh.h",
     ],
     data = [
         "//learn_opengl/textures",
@@ -17,6 +18,7 @@ cc_binary(
         "//third_party/glad",
         "//third_party/glfw",
         "//third_party/stb_image",
+        "@assimp",
         "@glm",
     ],
 )
