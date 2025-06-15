@@ -165,6 +165,12 @@ int solve() {
       1.0f,  0.0f,  -0.5f, 0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
       -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.0f,  1.0f};
   glm::vec3 light_pos(1.2f, 1.0f, 2.0f);
+  glm::vec3 cube_positions[] = {
+      glm::vec3(0.0f, 0.0f, 0.0f),    glm::vec3(2.0f, 5.0f, -15.0f),
+      glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(-3.8f, -2.0f, -12.3f),
+      glm::vec3(2.4f, -0.4f, -3.5f),  glm::vec3(-1.7f, 3.0f, -7.5f),
+      glm::vec3(1.3f, -2.0f, -2.5f),  glm::vec3(1.5f, 2.0f, -2.5f),
+      glm::vec3(1.5f, 0.2f, -1.5f),   glm::vec3(-1.3f, 1.0f, -1.5f)};
 
   unsigned int vao;
   glGenVertexArrays(1, &vao);
@@ -249,9 +255,6 @@ int solve() {
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
     // draw the cube
-    model = glm::mat4(1.0f);
-    // model = glm::rotate(model, 20 * float(glm::radians(glfwGetTime())),
-    //                     glm::vec3(0.0f, 1.0f, 0.0f));
     our_shader.use(); // need to activate the shader before setting the uniforms
     our_shader.setInt("material.diffuse", 0);
     our_shader.setInt("material.specular", 1);
@@ -260,11 +263,10 @@ int solve() {
     our_shader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
     our_shader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
     our_shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-    our_shader.setVec3("light.position", light_pos);
+    our_shader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
 
     our_shader.setVec3("viewPos", camera.getPosition());
 
-    our_shader.setMatrix("model", model);
     our_shader.setMatrix("view", camera.getViewMatrix());
     our_shader.setMatrix("projection", projection);
 
@@ -273,9 +275,17 @@ int solve() {
     glBindTexture(GL_TEXTURE_2D, diffuse_map);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, specular_map);
-
     glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+
+    for (auto i = 0; i < 10; i++) {
+      model = glm::mat4(1.0f);
+      model = glm::translate(model, cube_positions[i]);
+      float angle = 20.0f * i;
+      model =
+          glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5));
+      our_shader.setMatrix("model", model);
+      glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
     // check and call events and swap the buffers
     glfwSwapBuffers(window);
