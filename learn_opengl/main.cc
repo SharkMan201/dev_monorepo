@@ -164,13 +164,15 @@ int solve() {
       1.0f,  0.0f,  1.0f,  0.0f,  0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
       1.0f,  0.0f,  -0.5f, 0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
       -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.0f,  1.0f};
-  glm::vec3 light_pos(1.2f, 1.0f, 2.0f);
   glm::vec3 cube_positions[] = {
       glm::vec3(0.0f, 0.0f, 0.0f),    glm::vec3(2.0f, 5.0f, -15.0f),
       glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(-3.8f, -2.0f, -12.3f),
       glm::vec3(2.4f, -0.4f, -3.5f),  glm::vec3(-1.7f, 3.0f, -7.5f),
       glm::vec3(1.3f, -2.0f, -2.5f),  glm::vec3(1.5f, 2.0f, -2.5f),
       glm::vec3(1.5f, 0.2f, -1.5f),   glm::vec3(-1.3f, 1.0f, -1.5f)};
+  glm::vec3 point_light_positions[] = {
+      glm::vec3(0.7f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f),
+      glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(0.0f, 0.0f, -3.0f)};
 
   unsigned int vao;
   glGenVertexArrays(1, &vao);
@@ -239,39 +241,61 @@ int solve() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // draw the light
-    auto model = glm::mat4(1.0f);
-    model = glm::translate(model, light_pos);
-    model = glm::scale(model, glm::vec3(0.2f));
+    // draw the lights
     auto projection = glm::perspective(glm::radians(camera.getFov()),
                                        800.0f / 600.0f, 0.1f, 100.0f);
-
+    glBindVertexArray(light_vao);
     lighting_cube_shader.use();
-    lighting_cube_shader.setMatrix("model", model);
     lighting_cube_shader.setMatrix("view", camera.getViewMatrix());
     lighting_cube_shader.setMatrix("projection", projection);
 
-    glBindVertexArray(light_vao);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    for (auto point_light_position : point_light_positions) {
+      auto model = glm::mat4(1.0f);
+      model = glm::translate(model, point_light_position);
+      model = glm::scale(model, glm::vec3(0.2f));
+      lighting_cube_shader.setMatrix("model", model);
+      glDrawArrays(GL_TRIANGLES, 0, 36);
+    }
 
     // draw the cube
     our_shader.use(); // need to activate the shader before setting the uniforms
     our_shader.setInt("material.diffuse", 0);
     our_shader.setInt("material.specular", 1);
     our_shader.setFloat("material.shininess", 32.0f);
-
-    our_shader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-    our_shader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
-    our_shader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
-    our_shader.setVec3("light.position", camera.getPosition());
-    our_shader.setFloat("light.constant", 1.0f);
-    our_shader.setFloat("light.linear", 0.09f);
-    our_shader.setFloat("light.quadratic", 0.032f);
-    our_shader.setVec3("light.direction", camera.getFront());
-    our_shader.setFloat("light.cutOff", glm::cos(glm::radians(12.5f)));
-    our_shader.setFloat("light.outerCutOff", glm::cos(glm::radians(17.5f)));
-
     our_shader.setVec3("viewPos", camera.getPosition());
+
+    // dirLight
+    our_shader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
+    our_shader.setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
+    our_shader.setVec3("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
+    our_shader.setVec3("dirLight.specular", 1.0f, 1.0f, 1.0f);
+
+    // pointLights
+    int idx = 0;
+    for (auto point_light_position : point_light_positions) {
+      std::string point_light_name = "pointLights[" + std::to_string(idx) + "]";
+      our_shader.setVec3(point_light_name + ".position", point_light_position);
+      our_shader.setVec3(point_light_name + ".ambient", 0.2f, 0.2f, 0.2f);
+      our_shader.setVec3(point_light_name + ".diffuse", 0.5f, 0.5f, 0.5f);
+      our_shader.setVec3(point_light_name + ".specular", 1.0f, 1.0f, 1.0f);
+      our_shader.setFloat(point_light_name + ".constant", 1.0);
+      our_shader.setFloat(point_light_name + ".linear", 0.09f);
+      our_shader.setFloat(point_light_name + ".quadratic", 0.032f);
+
+      idx++;
+    }
+
+    // spotLight
+    our_shader.setVec3("spotLight.position", camera.getPosition());
+    our_shader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+    our_shader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+    our_shader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+    our_shader.setFloat("spotLight.constant", 1.0f);
+    our_shader.setFloat("spotLight.linear", 0.09f);
+    our_shader.setFloat("spotLight.quadratic", 0.032f);
+    our_shader.setVec3("spotLight.direction", camera.getFront());
+    our_shader.setFloat("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
+    our_shader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
 
     our_shader.setMatrix("view", camera.getViewMatrix());
     our_shader.setMatrix("projection", projection);
@@ -284,7 +308,7 @@ int solve() {
     glBindVertexArray(vao);
 
     for (auto i = 0; i < 10; i++) {
-      model = glm::mat4(1.0f);
+      auto model = glm::mat4(1.0f);
       model = glm::translate(model, cube_positions[i]);
       float angle = 20.0f * i;
       model =
