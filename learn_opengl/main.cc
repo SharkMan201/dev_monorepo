@@ -2,6 +2,7 @@
 // Created by abdoe on 6/06/2025.
 //
 #include "learn_opengl/camera.h"
+#include "learn_opengl/model.h"
 #include "learn_opengl/shaders/shader.h"
 #include "third_party/glad/include/glad/glad.h"
 #include "third_party/stb_image/stb_image.h"
@@ -58,44 +59,6 @@ void scrollCallback(GLFWwindow *window, double x_offset, double y_offset) {
   camera.processMouseScroll(static_cast<float>(y_offset));
 }
 
-unsigned int loadTexture(const std::string &path) {
-  unsigned int texture_id;
-  glGenTextures(1, &texture_id);
-
-  int width, height, nr_components;
-  unsigned char *data = stbi_load(LocalPaths::getLocalPath(path).c_str(),
-                                  &width, &height, &nr_components, 0);
-  if (data) {
-    GLenum format = GL_RED;
-    if (nr_components == 1)
-      format = GL_RED;
-    else if (nr_components == 3)
-      format = GL_RGB;
-    else if (nr_components == 4)
-      format = GL_RGBA;
-
-    glBindTexture(GL_TEXTURE_2D, texture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,
-                 GL_UNSIGNED_BYTE, data);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                    GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    stbi_image_free(data);
-  } else {
-    const std::string err_message =
-        "Texture failed to load at path " + path + "\n";
-    stbi_image_free(data);
-    throw std::runtime_error(err_message);
-  }
-
-  return texture_id;
-}
-
 int solve() {
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -128,104 +91,19 @@ int solve() {
   glViewport(0, 0, WIDTH, HEIGHT);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-  float vertices[] = {
-      -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f,  0.0f,  0.5f,  -0.5f,
-      -0.5f, 0.0f,  0.0f,  -1.0f, 1.0f,  0.0f,  0.5f,  0.5f,  -0.5f, 0.0f,
-      0.0f,  -1.0f, 1.0f,  1.0f,  0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f,
-      1.0f,  1.0f,  -0.5f, 0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f,  1.0f,
-      -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.0f,  0.0f,
-
-      -0.5f, -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,  0.5f,  -0.5f,
-      0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,  0.5f,  0.5f,  0.5f,  0.0f,
-      0.0f,  1.0f,  1.0f,  1.0f,  0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-      1.0f,  1.0f,  -0.5f, 0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-      -0.5f, -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-
-      -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  1.0f,  0.0f,  -0.5f, 0.5f,
-      -0.5f, -1.0f, 0.0f,  0.0f,  1.0f,  1.0f,  -0.5f, -0.5f, -0.5f, -1.0f,
-      0.0f,  0.0f,  0.0f,  1.0f,  -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,
-      0.0f,  1.0f,  -0.5f, -0.5f, 0.5f,  -1.0f, 0.0f,  0.0f,  0.0f,  0.0f,
-      -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  1.0f,  0.0f,
-
-      0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,  0.5f,  0.5f,
-      -0.5f, 1.0f,  0.0f,  0.0f,  1.0f,  1.0f,  0.5f,  -0.5f, -0.5f, 1.0f,
-      0.0f,  0.0f,  0.0f,  1.0f,  0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,
-      0.0f,  1.0f,  0.5f,  -0.5f, 0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-      0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-      -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.0f,  1.0f,  0.5f,  -0.5f,
-      -0.5f, 0.0f,  -1.0f, 0.0f,  1.0f,  1.0f,  0.5f,  -0.5f, 0.5f,  0.0f,
-      -1.0f, 0.0f,  1.0f,  0.0f,  0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,
-      1.0f,  0.0f,  -0.5f, -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  0.0f,  0.0f,
-      -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.0f,  1.0f,
-
-      -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.0f,  1.0f,  0.5f,  0.5f,
-      -0.5f, 0.0f,  1.0f,  0.0f,  1.0f,  1.0f,  0.5f,  0.5f,  0.5f,  0.0f,
-      1.0f,  0.0f,  1.0f,  0.0f,  0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-      1.0f,  0.0f,  -0.5f, 0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-      -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.0f,  1.0f};
-  glm::vec3 cube_positions[] = {
-      glm::vec3(0.0f, 0.0f, 0.0f),    glm::vec3(2.0f, 5.0f, -15.0f),
-      glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(-3.8f, -2.0f, -12.3f),
-      glm::vec3(2.4f, -0.4f, -3.5f),  glm::vec3(-1.7f, 3.0f, -7.5f),
-      glm::vec3(1.3f, -2.0f, -2.5f),  glm::vec3(1.5f, 2.0f, -2.5f),
-      glm::vec3(1.5f, 0.2f, -1.5f),   glm::vec3(-1.3f, 1.0f, -1.5f)};
-  glm::vec3 point_light_positions[] = {
-      glm::vec3(0.7f, 0.2f, 2.0f), glm::vec3(2.3f, -3.3f, -4.0f),
-      glm::vec3(-4.0f, 2.0f, -12.0f), glm::vec3(0.0f, 0.0f, -3.0f)};
-
-  unsigned int vao;
-  glGenVertexArrays(1, &vao);
-  // 1. bind vertex array object
-  glBindVertexArray(vao);
-
-  // 2. copy our vertices array in a buffer for OpenGL to use
-  unsigned int vbo;
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  // tell openGL how to read the vertex buffer data
-  // setup vertices (location = 0)
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        reinterpret_cast<void *>(0));
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        reinterpret_cast<void *>(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        reinterpret_cast<void *>(6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
-
   // setup stbi to flip image y-axis by default
   stbi_set_flip_vertically_on_load(true);
 
-  // light setup
-  unsigned int light_vao;
-  glGenVertexArrays(1, &light_vao);
-  glBindVertexArray(light_vao);
-  // bind to the same vbo, the vbo contains the same data
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        reinterpret_cast<void *>(0));
-  glEnableVertexAttribArray(0);
-
-  // light maps setup
-  auto diffuse_map = loadTexture("_main/learn_opengl/textures/container2.png");
-  auto specular_map =
-      loadTexture("_main/learn_opengl/textures/container2_specular.png");
-
   // create shaders
   Shader our_shader("_main/learn_opengl/shaders/shader.vert",
-                    "_main/learn_opengl/shaders/shader.frag");
-
-  Shader lighting_cube_shader("_main/learn_opengl/shaders/light_shader.vert",
-                              "_main/learn_opengl/shaders/light_shader.frag");
+                    "_main/learn_opengl/shaders/simple_shader.frag");
 
   glEnable(GL_DEPTH_TEST);
 
   float delta_time = 0.0f;
   float last_frame = 0.0f;
+
+  Model our_model("_main/learn_opengl/models/backpack/backpack.obj");
 
   while (!glfwWindowShouldClose(window)) {
     // calculate delta
@@ -241,93 +119,25 @@ int solve() {
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // draw the lights
     auto projection = glm::perspective(glm::radians(camera.getFov()),
                                        800.0f / 600.0f, 0.1f, 100.0f);
-    glBindVertexArray(light_vao);
-    lighting_cube_shader.use();
-    lighting_cube_shader.setMatrix("view", camera.getViewMatrix());
-    lighting_cube_shader.setMatrix("projection", projection);
-
-    for (auto point_light_position : point_light_positions) {
-      auto model = glm::mat4(1.0f);
-      model = glm::translate(model, point_light_position);
-      model = glm::scale(model, glm::vec3(0.2f));
-      lighting_cube_shader.setMatrix("model", model);
-      glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
-
-    // draw the cube
     our_shader.use(); // need to activate the shader before setting the uniforms
-    our_shader.setInt("material.diffuse", 0);
-    our_shader.setInt("material.specular", 1);
-    our_shader.setFloat("material.shininess", 32.0f);
-    our_shader.setVec3("viewPos", camera.getPosition());
-
-    // dirLight
-    our_shader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-    our_shader.setVec3("dirLight.ambient", 0.2f, 0.2f, 0.2f);
-    our_shader.setVec3("dirLight.diffuse", 0.5f, 0.5f, 0.5f);
-    our_shader.setVec3("dirLight.specular", 1.0f, 1.0f, 1.0f);
-
-    // pointLights
-    int idx = 0;
-    for (auto point_light_position : point_light_positions) {
-      std::string point_light_name = "pointLights[" + std::to_string(idx) + "]";
-      our_shader.setVec3(point_light_name + ".position", point_light_position);
-      our_shader.setVec3(point_light_name + ".ambient", 0.2f, 0.2f, 0.2f);
-      our_shader.setVec3(point_light_name + ".diffuse", 0.5f, 0.5f, 0.5f);
-      our_shader.setVec3(point_light_name + ".specular", 1.0f, 1.0f, 1.0f);
-      our_shader.setFloat(point_light_name + ".constant", 1.0);
-      our_shader.setFloat(point_light_name + ".linear", 0.09f);
-      our_shader.setFloat(point_light_name + ".quadratic", 0.032f);
-
-      idx++;
-    }
-
-    // spotLight
-    our_shader.setVec3("spotLight.position", camera.getPosition());
-    our_shader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-    our_shader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-    our_shader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
-    our_shader.setFloat("spotLight.constant", 1.0f);
-    our_shader.setFloat("spotLight.linear", 0.09f);
-    our_shader.setFloat("spotLight.quadratic", 0.032f);
-    our_shader.setVec3("spotLight.direction", camera.getFront());
-    our_shader.setFloat("spotLight.innerCutOff", glm::cos(glm::radians(12.5f)));
-    our_shader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-
     our_shader.setMatrix("view", camera.getViewMatrix());
     our_shader.setMatrix("projection", projection);
 
-    // set up the diffuse map
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, diffuse_map);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, specular_map);
-    glBindVertexArray(vao);
-
-    for (auto i = 0; i < 10; i++) {
-      auto model = glm::mat4(1.0f);
-      model = glm::translate(model, cube_positions[i]);
-      float angle = 20.0f * i;
-      model =
-          glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5));
-      our_shader.setMatrix("model", model);
-      glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
+    // render the loaded model
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
+    our_shader.setMatrix("model", model);
+    our_model.Draw(our_shader);
 
     // check and call events and swap the buffers
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
 
-  // de-allocate all resources
-  glDeleteVertexArrays(1, &vao);
-  glDeleteVertexArrays(1, &light_vao);
-  glDeleteBuffers(1, &vbo);
   our_shader.destroy();
-  lighting_cube_shader.destroy();
 
   glfwTerminate();
   return 0;

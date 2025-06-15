@@ -22,12 +22,16 @@ struct Vertex {
 struct Texture {
   uint32_t id;
   string type;
+  string path;
 };
 
 class Mesh {
 public:
-  Mesh(vector<Vertex> vertices, vector<uint32_t> indices,
-       vector<Texture> textures) {
+  Mesh &operator=(const Mesh &) = delete;
+  Mesh(const Mesh &) = delete;
+
+  Mesh(vector<Vertex> &vertices, vector<uint32_t> &indices,
+       vector<Texture> &textures) {
     vertices_ = std::move(vertices);
     indices_ = std::move(indices);
     textures_ = std::move(textures);

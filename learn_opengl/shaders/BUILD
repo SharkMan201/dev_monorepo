@@ -6,6 +6,7 @@ cc_library(
         "light_shader.vert",
         "shader.frag",
         "shader.vert",
+        "simple_shader.frag",
     ],
     visibility = ["//visibility:public"],
     deps = [

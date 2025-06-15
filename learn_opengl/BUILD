@@ -8,17 +8,19 @@ cc_binary(
         "camera.h",
         "main.cc",
         "mesh.h",
+        "model.h",
     ],
     data = [
+        "//learn_opengl/models",
         "//learn_opengl/textures",
     ],
     linkopts = OPENGL_LINKOPTS,
     deps = [
         "//learn_opengl/shaders",
+        "//third_party/assimp",
         "//third_party/glad",
         "//third_party/glfw",
         "//third_party/stb_image",
-        "@assimp",
         "@glm",
     ],
 )
