@@ -34,7 +34,7 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-int main() {
+int solve() {
   // glfw: initialize and configure
   // ------------------------------
   glfwInit();
@@ -92,6 +92,10 @@ int main() {
   Shader single_color_shader(
       "_main/learn_opengl_advanced/shaders/1.1.depth_testing.vert",
       "_main/learn_opengl_advanced/shaders/1.2.single_color.frag");
+
+  Shader simple_screen_shader(
+      "_main/learn_opengl_advanced/shaders/1.3.simple_shader.vert",
+      "_main/learn_opengl_advanced/shaders/1.3.simple_shader.frag");
 
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
@@ -156,6 +160,11 @@ int main() {
 
       0.0f, 0.5f, 0.0f, 0.0f,  0.0f, 1.0f, -0.5f, 0.0f,
       1.0f, 1.0f, 1.0f, 0.5f,  0.0f, 1.0f, 0.0f};
+  float quadVertices[] = {
+      -1.0f, 1.0f,  0.0f, 1.0f, 1.0f,  -1.0f, 1.0f, 0.0f,
+      1.0f,  1.0f,  1.0f, 1.0f, -1.0f, 1.0f,  0.0f, 1.0f,
+      -1.0f, -1.0f, 0.0f, 0.0f, 1.0f,  -1.0f, 1.0f, 0.0f,
+  };
   std::vector<glm::vec3> vegetation;
   vegetation.emplace_back(-1.5f, 0.0f, -0.48f);
   vegetation.emplace_back(1.5f, 0.0f, 0.51f);
@@ -206,6 +215,21 @@ int main() {
                         (void *)(3 * sizeof(float)));
   glBindVertexArray(0);
 
+  // quad VAO
+  unsigned int quadVAO, quadVBO;
+  glGenVertexArrays(1, &quadVAO);
+  glGenBuffers(1, &quadVBO);
+  glBindVertexArray(quadVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices,
+               GL_STATIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *)0);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
+                        (void *)(2 * sizeof(float)));
+  glBindVertexArray(0);
+
   // load textures
   // -------------
   unsigned int cubeTexture =
@@ -222,6 +246,47 @@ int main() {
       LocalPaths::getLocalPath("_main/learn_opengl_advanced/textures/"
                                "blending_transparent_window.png")
           .c_str());
+  unsigned int containerTexture =
+      loadTexture(LocalPaths::getLocalPath(
+                      "_main/learn_opengl_advanced/textures/container.jpg")
+                      .c_str());
+
+  // frame buffers
+  unsigned int framebuffer;
+  glGenFramebuffers(1, &framebuffer);
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+  // texture attachment (color attachment)
+  unsigned int textureColorBuffer;
+  glGenTextures(1, &textureColorBuffer);
+  glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, nullptr);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  // attach it
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
+                         textureColorBuffer, 0);
+
+  // create render buffer for stencil & depth testing
+  // (render buffer can't be sampled like textures)
+  unsigned int rbo;
+  glGenRenderbuffers(1, &rbo);
+  glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH,
+                        SCR_HEIGHT);
+  glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+  // attach it
+  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
+                            GL_RENDERBUFFER, rbo);
+
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    throw std::runtime_error("ERROR::FRAMEBUFFER::Framebuffer is incomplete");
+
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   // shader configuration
   // --------------------
@@ -240,6 +305,8 @@ int main() {
     // input
     // -----
     processInput(window);
+    // render to the frame buffer (1ST PASS)
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
     glEnable(GL_DEPTH_TEST);
     glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
@@ -262,7 +329,7 @@ int main() {
     // cubes
     glBindVertexArray(cubeVAO);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, cubeTexture);
+    glBindTexture(GL_TEXTURE_2D, containerTexture);
     model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
     shader.setMat4("model", model);
     glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -317,6 +384,18 @@ int main() {
     // single_color_shader.setMat4("model", model);
     // glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
+
+
+    // draw to the default buffer (2ND PASS)
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    simple_screen_shader.use();
+    glBindVertexArray(quadVAO);
+    glDisable(GL_DEPTH_TEST);
+    glBindTexture(GL_TEXTURE_2D, textureColorBuffer);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // glStencilMask(0xFF);
 
@@ -429,4 +508,13 @@ unsigned int loadTexture(char const *path) {
   }
 
   return textureID;
+}
+
+int main() {
+  try {
+    return solve();
+  } catch (std::exception &ex) {
+    std::cerr << ex.what() << std::endl << std::flush;
+    return -1;
+  }
 }
