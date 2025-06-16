@@ -1,31 +1,17 @@
 #version 330 core
 out vec4 FragColor;
 
-in vec2 TexCoords;
+in vec3 Normal;
+in vec3 Position;
 
-uniform sampler2D texture1;
-
-float near = 0.1;
-float far = 100.0;
-
-float LinearizeDepth(float depth) {
-    // change it from rant [0, 1] to [-1, 1]
-    float z = depth * 2.0 - 1.0;
-    return (2.0 * near * far) / (far + near - z * (far - near));
-}
+uniform vec3 cameraPos;
+uniform samplerCube skybox;
 
 void main()
 {
-    vec4 texColor = texture(texture1, TexCoords);
-//    if (texColor.a < 0.1)
-//        discard;
+    // reflections
+    vec3 I = normalize(Position - cameraPos);
+    vec3 R = reflect(I, normalize(Normal));
 
-    FragColor = texColor;
-
-    // depth values in FragCoord are non-linear, smaller the value, the more
-    // accurate it gets, further values are close to 1 due to projection
-    // properties
-    // divide by far for demonstration
-    // float depth = LinearizeDepth(gl_FragCoord.z) / far;
-    // FragColor = vec4(vec3(depth), 1.0);
+    FragColor = vec4(texture(skybox, R).rgb, 1.0);
 }

@@ -82,7 +82,7 @@ int solve() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-  glEnable(GL_CULL_FACE);
+  // glEnable(GL_CULL_FACE);
   // glCullFace(GL_FRONT);
 
   // build and compile shaders
@@ -105,49 +105,28 @@ int solve() {
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
   float cubeVertices[] = {
-      // Back face
-      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // Bottom-left
-      0.5f, 0.5f, -0.5f, 1.0f, 1.0f,   // top-right
-      0.5f, -0.5f, -0.5f, 1.0f, 0.0f,  // bottom-right
-      0.5f, 0.5f, -0.5f, 1.0f, 1.0f,   // top-right
-      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // bottom-left
-      -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,  // top-left
-      // Front face
-      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
-      0.5f, -0.5f, 0.5f, 1.0f, 0.0f,  // bottom-right
-      0.5f, 0.5f, 0.5f, 1.0f, 1.0f,   // top-right
-      0.5f, 0.5f, 0.5f, 1.0f, 1.0f,   // top-right
-      -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,  // top-left
-      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
-      // Left face
-      -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,   // top-right
-      -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,  // top-left
-      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-left
-      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-left
-      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,  // bottom-right
-      -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,   // top-right
-                                       // Right face
-      0.5f, 0.5f, 0.5f, 1.0f, 0.0f,    // top-left
-      0.5f, -0.5f, -0.5f, 0.0f, 1.0f,  // bottom-right
-      0.5f, 0.5f, -0.5f, 1.0f, 1.0f,   // top-right
-      0.5f, -0.5f, -0.5f, 0.0f, 1.0f,  // bottom-right
-      0.5f, 0.5f, 0.5f, 1.0f, 0.0f,    // top-left
-      0.5f, -0.5f, 0.5f, 0.0f, 0.0f,   // bottom-left
-      // Bottom face
-      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
-      0.5f, -0.5f, -0.5f, 1.0f, 1.0f,  // top-left
-      0.5f, -0.5f, 0.5f, 1.0f, 0.0f,   // bottom-left
-      0.5f, -0.5f, 0.5f, 1.0f, 0.0f,   // bottom-left
-      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,  // bottom-right
-      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
-      // Top face
-      -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
-      0.5f, 0.5f, 0.5f, 1.0f, 0.0f,   // bottom-right
-      0.5f, 0.5f, -0.5f, 1.0f, 1.0f,  // top-right
-      0.5f, 0.5f, 0.5f, 1.0f, 0.0f,   // bottom-right
-      -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
-      -0.5f, 0.5f, 0.5f, 0.0f, 0.0f   // bottom-left
-  };
+      -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.5f,  -0.5f, -0.5f, 0.0f,
+      0.0f,  -1.0f, 0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 0.5f,  0.5f,
+      -0.5f, 0.0f,  0.0f,  -1.0f, -0.5f, 0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f,
+      -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, -0.5f, -0.5f, 0.5f,  0.0f,
+      0.0f,  1.0f,  0.5f,  -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.5f,  0.5f,
+      0.5f,  0.0f,  0.0f,  1.0f,  0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+      -0.5f, 0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  -0.5f, -0.5f, 0.5f,  0.0f,
+      0.0f,  1.0f,  -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  -0.5f, 0.5f,
+      -0.5f, -1.0f, 0.0f,  0.0f,  -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,
+      -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,  -0.5f, -0.5f, 0.5f,  -1.0f,
+      0.0f,  0.0f,  -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  0.5f,  0.5f,
+      0.5f,  1.0f,  0.0f,  0.0f,  0.5f,  0.5f,  -0.5f, 1.0f,  0.0f,  0.0f,
+      0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,  0.5f,  -0.5f, -0.5f, 1.0f,
+      0.0f,  0.0f,  0.5f,  -0.5f, 0.5f,  1.0f,  0.0f,  0.0f,  0.5f,  0.5f,
+      0.5f,  1.0f,  0.0f,  0.0f,  -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,
+      0.5f,  -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.5f,  -0.5f, 0.5f,  0.0f,
+      -1.0f, 0.0f,  0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  -0.5f, -0.5f,
+      0.5f,  0.0f,  -1.0f, 0.0f,  -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,
+      -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.5f,  0.5f,  -0.5f, 0.0f,
+      1.0f,  0.0f,  0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.5f,  0.5f,
+      0.5f,  0.0f,  1.0f,  0.0f,  -0.5f, 0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+      -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f};
   float planeVertices[] = {
       // positions          // texture Coords (note we set these higher than 1
       // (together with GL_REPEAT as texture wrapping mode). this will cause the
@@ -198,9 +177,9 @@ int solve() {
   glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices,
                GL_STATIC_DRAW);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
                         (void *)(3 * sizeof(float)));
   glBindVertexArray(0);
   // plane VAO
@@ -368,8 +347,10 @@ int solve() {
     shader.use();
     shader.setMat4("view", view);
     shader.setMat4("projection", projection);
+    shader.setVec3("cameraPos", camera.GetPosition());
     // cubes
     glBindVertexArray(cubeVAO);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, containerTexture);
     model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
@@ -380,11 +361,11 @@ int solve() {
     shader.setMat4("model", model);
     glDrawArrays(GL_TRIANGLES, 0, 36);
     // floor
-    glStencilMask(0x00); // disable stencil mask when drawing the floor
-    glBindVertexArray(planeVAO);
-    glBindTexture(GL_TEXTURE_2D, floorTexture);
-    shader.setMat4("model", glm::mat4(1.0f));
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+    // glStencilMask(0x00); // disable stencil mask when drawing the floor
+    // glBindVertexArray(planeVAO);
+    // glBindTexture(GL_TEXTURE_2D, floorTexture);
+    // shader.setMat4("model", glm::mat4(1.0f));
+    // glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // draw the skybox
     glDepthFunc(GL_LEQUAL);
