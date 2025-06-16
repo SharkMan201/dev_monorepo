@@ -3,6 +3,7 @@ filegroup(
     srcs = [
         "1.1.depth_testing.frag",
         "1.1.depth_testing.vert",
+        "1.2.single_color.frag",
     ],
     visibility = ["//visibility:public"],
 )
