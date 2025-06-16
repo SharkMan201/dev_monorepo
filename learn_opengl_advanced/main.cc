@@ -81,6 +81,9 @@ int main() {
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+  glEnable(GL_CULL_FACE);
+  // glCullFace(GL_FRONT);
+
   // build and compile shaders
   // -------------------------
   Shader shader("_main/learn_opengl_advanced/shaders/1.1.depth_testing.vert",
@@ -93,39 +96,58 @@ int main() {
   // set up vertex data (and buffer(s)) and configure vertex attributes
   // ------------------------------------------------------------------
   float cubeVertices[] = {
-      // positions          // texture Coords
-      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 0.0f,
-      0.5f,  0.5f,  -0.5f, 1.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
-      -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-
-      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  1.0f, 0.0f,
-      0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-      -0.5f, 0.5f,  0.5f,  0.0f, 1.0f, -0.5f, -0.5f, 0.5f,  0.0f, 0.0f,
-
-      -0.5f, 0.5f,  0.5f,  1.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 1.0f, 1.0f,
-      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  0.5f,  1.0f, 0.0f,
-
-      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
-      0.5f,  -0.5f, -0.5f, 0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 0.0f, 1.0f,
-      0.5f,  -0.5f, 0.5f,  0.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f,  -0.5f, -0.5f, 1.0f, 1.0f,
-      0.5f,  -0.5f, 0.5f,  1.0f, 0.0f, 0.5f,  -0.5f, 0.5f,  1.0f, 0.0f,
-      -0.5f, -0.5f, 0.5f,  0.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-
-      -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f, 0.5f,  0.5f,  -0.5f, 1.0f, 1.0f,
-      0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-      -0.5f, 0.5f,  0.5f,  0.0f, 0.0f, -0.5f, 0.5f,  -0.5f, 0.0f, 1.0f};
+      // Back face
+      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // Bottom-left
+      0.5f, 0.5f, -0.5f, 1.0f, 1.0f,   // top-right
+      0.5f, -0.5f, -0.5f, 1.0f, 0.0f,  // bottom-right
+      0.5f, 0.5f, -0.5f, 1.0f, 1.0f,   // top-right
+      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // bottom-left
+      -0.5f, 0.5f, -0.5f, 0.0f, 1.0f,  // top-left
+      // Front face
+      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
+      0.5f, -0.5f, 0.5f, 1.0f, 0.0f,  // bottom-right
+      0.5f, 0.5f, 0.5f, 1.0f, 1.0f,   // top-right
+      0.5f, 0.5f, 0.5f, 1.0f, 1.0f,   // top-right
+      -0.5f, 0.5f, 0.5f, 0.0f, 1.0f,  // top-left
+      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
+      // Left face
+      -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,   // top-right
+      -0.5f, 0.5f, -0.5f, 1.0f, 1.0f,  // top-left
+      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-left
+      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-left
+      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,  // bottom-right
+      -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,   // top-right
+                                       // Right face
+      0.5f, 0.5f, 0.5f, 1.0f, 0.0f,    // top-left
+      0.5f, -0.5f, -0.5f, 0.0f, 1.0f,  // bottom-right
+      0.5f, 0.5f, -0.5f, 1.0f, 1.0f,   // top-right
+      0.5f, -0.5f, -0.5f, 0.0f, 1.0f,  // bottom-right
+      0.5f, 0.5f, 0.5f, 1.0f, 0.0f,    // top-left
+      0.5f, -0.5f, 0.5f, 0.0f, 0.0f,   // bottom-left
+      // Bottom face
+      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
+      0.5f, -0.5f, -0.5f, 1.0f, 1.0f,  // top-left
+      0.5f, -0.5f, 0.5f, 1.0f, 0.0f,   // bottom-left
+      0.5f, -0.5f, 0.5f, 1.0f, 0.0f,   // bottom-left
+      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,  // bottom-right
+      -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
+      // Top face
+      -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
+      0.5f, 0.5f, 0.5f, 1.0f, 0.0f,   // bottom-right
+      0.5f, 0.5f, -0.5f, 1.0f, 1.0f,  // top-right
+      0.5f, 0.5f, 0.5f, 1.0f, 0.0f,   // bottom-right
+      -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
+      -0.5f, 0.5f, 0.5f, 0.0f, 0.0f   // bottom-left
+  };
   float planeVertices[] = {
       // positions          // texture Coords (note we set these higher than 1
       // (together with GL_REPEAT as texture wrapping mode). this will cause the
       // floor texture to repeat)
-      5.0f, -0.5f, 5.0f,  2.0f,  0.0f,  -5.0f, -0.5f, 5.0f,
-      0.0f, 0.0f,  -5.0f, -0.5f, -5.0f, 0.0f,  2.0f,
-
       5.0f, -0.5f, 5.0f,  2.0f,  0.0f,  -5.0f, -0.5f, -5.0f,
-      0.0f, 2.0f,  5.0f,  -0.5f, -5.0f, 2.0f,  2.0f};
+      0.0f, 2.0f,  -5.0f, -0.5f, 5.0f,  0.0f,  0.0f,
+
+      5.0f, -0.5f, 5.0f,  2.0f,  0.0f,  5.0f,  -0.5f, -5.0f,
+      2.0f, 2.0f,  -5.0f, -0.5f, -5.0f, 0.0f,  2.0f};
   float transparentVertices[] = {
       // positions         // texture Coords (swapped y coordinates because
       // texture is flipped upside down)
@@ -256,22 +278,22 @@ int main() {
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     // sort them to draw them from furthest to closest
-    std::map<float, glm::vec3> sorted;
-    for (unsigned int i = 0; i < vegetation.size(); i++) {
-      float distance = glm::length(camera.GetPosition() - vegetation[i]);
-      sorted[distance] = vegetation[i];
-    }
-
-    glBindVertexArray(vegetationVAO);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, windowTexture);
-    for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin();
-         it != sorted.rend(); ++it) {
-      model = glm::mat4(1.0f);
-      model = glm::translate(model, it->second);
-      shader.setMat4("model", model);
-      glDrawArrays(GL_TRIANGLES, 0, 6);
-    }
+    // std::map<float, glm::vec3> sorted;
+    // for (unsigned int i = 0; i < vegetation.size(); i++) {
+    //   float distance = glm::length(camera.GetPosition() - vegetation[i]);
+    //   sorted[distance] = vegetation[i];
+    // }
+    //
+    // glBindVertexArray(vegetationVAO);
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, windowTexture);
+    // for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin();
+    //      it != sorted.rend(); ++it) {
+    //   model = glm::mat4(1.0f);
+    //   model = glm::translate(model, it->second);
+    //   shader.setMat4("model", model);
+    //   glDrawArrays(GL_TRIANGLES, 0, 6);
+    // }
 
     // cube border
     // glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
