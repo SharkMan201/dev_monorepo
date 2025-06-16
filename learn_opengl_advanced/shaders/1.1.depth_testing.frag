@@ -16,7 +16,11 @@ float LinearizeDepth(float depth) {
 
 void main()
 {
-    FragColor = texture(texture1, TexCoords);
+    vec4 texColor = texture(texture1, TexCoords);
+//    if (texColor.a < 0.1)
+//        discard;
+
+    FragColor = texColor;
 
     // depth values in FragCoord are non-linear, smaller the value, the more
     // accurate it gets, further values are close to 1 due to projection

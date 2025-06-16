@@ -78,6 +78,9 @@ int main() {
 
   glEnable(GL_STENCIL_TEST);
 
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
   // build and compile shaders
   // -------------------------
   Shader shader("_main/learn_opengl_advanced/shaders/1.1.depth_testing.vert",
@@ -123,6 +126,20 @@ int main() {
 
       5.0f, -0.5f, 5.0f,  2.0f,  0.0f,  -5.0f, -0.5f, -5.0f,
       0.0f, 2.0f,  5.0f,  -0.5f, -5.0f, 2.0f,  2.0f};
+  float transparentVertices[] = {
+      // positions         // texture Coords (swapped y coordinates because
+      // texture is flipped upside down)
+      0.0f, 0.5f, 0.0f, 0.0f,  0.0f, 0.0f, -0.5f, 0.0f,
+      0.0f, 1.0f, 1.0f, -0.5f, 0.0f, 1.0f, 1.0f,
+
+      0.0f, 0.5f, 0.0f, 0.0f,  0.0f, 1.0f, -0.5f, 0.0f,
+      1.0f, 1.0f, 1.0f, 0.5f,  0.0f, 1.0f, 0.0f};
+  std::vector<glm::vec3> vegetation;
+  vegetation.emplace_back(-1.5f, 0.0f, -0.48f);
+  vegetation.emplace_back(1.5f, 0.0f, 0.51f);
+  vegetation.emplace_back(0.0f, 0.0f, 0.7f);
+  vegetation.emplace_back(-0.3f, 0.0f, -2.3f);
+  vegetation.emplace_back(0.5f, 0.0f, -0.6f);
   // cube VAO
   unsigned int cubeVAO, cubeVBO;
   glGenVertexArrays(1, &cubeVAO);
@@ -152,6 +169,21 @@ int main() {
                         (void *)(3 * sizeof(float)));
   glBindVertexArray(0);
 
+  // vegetation vao
+  unsigned int vegetationVAO, vegetationVBO;
+  glGenVertexArrays(1, &vegetationVAO);
+  glGenBuffers(1, &vegetationVBO);
+  glBindVertexArray(vegetationVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, vegetationVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices),
+               &transparentVertices, GL_STATIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *)0);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float),
+                        (void *)(3 * sizeof(float)));
+  glBindVertexArray(0);
+
   // load textures
   // -------------
   unsigned int cubeTexture =
@@ -160,6 +192,13 @@ int main() {
                       .c_str());
   unsigned int floorTexture = loadTexture(
       LocalPaths::getLocalPath("_main/learn_opengl_advanced/textures/metal.png")
+          .c_str());
+  unsigned int grassTexture = loadTexture(
+      LocalPaths::getLocalPath("_main/learn_opengl_advanced/textures/grass.png")
+          .c_str());
+  unsigned int windowTexture = loadTexture(
+      LocalPaths::getLocalPath("_main/learn_opengl_advanced/textures/"
+                               "blending_transparent_window.png")
           .c_str());
 
   // shader configuration
@@ -216,27 +255,45 @@ int main() {
     shader.setMat4("model", glm::mat4(1.0f));
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
+    // sort them to draw them from furthest to closest
+    std::map<float, glm::vec3> sorted;
+    for (unsigned int i = 0; i < vegetation.size(); i++) {
+      float distance = glm::length(camera.GetPosition() - vegetation[i]);
+      sorted[distance] = vegetation[i];
+    }
+
+    glBindVertexArray(vegetationVAO);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, windowTexture);
+    for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin();
+         it != sorted.rend(); ++it) {
+      model = glm::mat4(1.0f);
+      model = glm::translate(model, it->second);
+      shader.setMat4("model", model);
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+
     // cube border
-    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
-    glStencilMask(0x00);
-    // disable depth test so it doesn't get overwritten by the floor
-    glDisable(GL_DEPTH_TEST);
-
-    glBindVertexArray(cubeVAO);
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-    model = glm::scale(model, glm::vec3(1.1f, 1.1f, 1.1f));
-    single_color_shader.use();
-    single_color_shader.setMat4("view", view);
-    single_color_shader.setMat4("projection", projection);
-    single_color_shader.setMat4("model", model);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
-
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(1.1f, 1.1f, 1.1f));
-    single_color_shader.setMat4("model", model);
-    glDrawArrays(GL_TRIANGLES, 0, 36);
+    // glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    // glStencilMask(0x00);
+    // // disable depth test so it doesn't get overwritten by the floor
+    // glDisable(GL_DEPTH_TEST);
+    //
+    // glBindVertexArray(cubeVAO);
+    // model = glm::mat4(1.0f);
+    // model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+    // model = glm::scale(model, glm::vec3(1.1f, 1.1f, 1.1f));
+    // single_color_shader.use();
+    // single_color_shader.setMat4("view", view);
+    // single_color_shader.setMat4("projection", projection);
+    // single_color_shader.setMat4("model", model);
+    // glDrawArrays(GL_TRIANGLES, 0, 36);
+    //
+    // model = glm::mat4(1.0f);
+    // model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+    // model = glm::scale(model, glm::vec3(1.1f, 1.1f, 1.1f));
+    // single_color_shader.setMat4("model", model);
+    // glDrawArrays(GL_TRIANGLES, 0, 36);
     glBindVertexArray(0);
 
     // glStencilMask(0xFF);
@@ -335,8 +392,10 @@ unsigned int loadTexture(char const *path) {
                  GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                    format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+                    format == GL_RGBA ? GL_CLAMP_TO_EDGE : GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                     GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
