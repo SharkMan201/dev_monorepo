@@ -24,7 +24,8 @@ public:
 
     // todo, better error handling ?
     if (!file.is_open()) {
-      throw std::runtime_error("failed to open file");
+      throw std::runtime_error("failed to open file at path: " + path +
+                               " generated local path is: " + local_path);
     }
 
     const size_t file_size = file.tellg();
