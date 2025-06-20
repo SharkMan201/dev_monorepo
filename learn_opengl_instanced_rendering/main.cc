@@ -113,42 +113,8 @@ int solve() {
   Model rock_model(
       "_main/learn_opengl_instanced_rendering/models/rock/rock.obj");
 
-  unsigned int amount = 100000;
+  unsigned int amount = 10000;
   std::vector<glm::mat4> modelMatrices(amount);
-  srand(glfwGetTime());
-  float radius = 80.0f;
-  float offset = 25.0f;
-
-  for (auto i = 0; i < amount; i++) {
-    glm::mat4 model = glm::mat4(1.0f);
-
-    // 1. translation: displace along circle with 'radius' in range [-ffset,
-    // offset]
-    float angle = static_cast<float>(i) / amount * 360.0f;
-    float displacement =
-        (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
-    float x = sin(angle) * radius + displacement;
-    displacement =
-        (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
-    float y = displacement *
-              0.4f; // keep hight of field smaller compared to width of x & z
-    displacement =
-        (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
-    float z = cos(angle) * radius + displacement;
-    model = glm::translate(model, glm::vec3(x, y, z));
-
-    // 2. scale: scale between 0.05 and 09.25f
-    float scale = (rand() % 20) / 100.0f + 0.05f;
-    model = glm::scale(model, glm::vec3(scale));
-
-    // 3. rotation: add random rotation around a semi-randomly picked rotation
-    // axis vector
-    float rotAngle = (rand() % 360);
-    model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
-
-    // 4. add to list of matrices
-    modelMatrices[i] = model;
-  }
 
   // instanceBufferObject
   unsigned int ibo;
@@ -184,6 +150,8 @@ int solve() {
     glBindVertexArray(0);
   }
 
+  bool first_render = true;
+
   while (!glfwWindowShouldClose(window)) {
     // calculate delta
     float current_frame = glfwGetTime();
@@ -210,6 +178,45 @@ int solve() {
     model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
     our_shader.setMat4("model", model);
     planet_model.Draw(our_shader);
+
+    srand(0);
+    float radius = 80.0f;
+    float offset = 25.0f;
+
+    for (auto i = 0; i < amount; i++) {
+      glm::mat4 model = glm::mat4(1.0f);
+
+      // 1. translation: displace along circle with 'radius' in range [-offset,
+      // offset]
+      float angle = static_cast<float>(i) / amount * 360.0f + glfwGetTime() / 10;
+      float displacement =
+          (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+      float x = sin(angle) * radius + displacement;
+      displacement =
+          (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+      float y = displacement *
+                0.4f; // keep height of field smaller compared to width of x & z
+      displacement =
+          (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+      float z = cos(angle) * radius + displacement;
+      model = glm::translate(model, glm::vec3(x, y, z));
+
+      // 2. scale: scale between 0.05 and 09.25f
+      float scale = (rand() % 20) / 100.0f + 0.05f;
+      model = glm::scale(model, glm::vec3(scale));
+
+      // 3. rotation: add random rotation around a semi-randomly picked rotation
+      // axis vector
+      float rotAngle = (rand() % 360) + glfwGetTime() / 10;
+      model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+
+      // 4. add to list of matrices
+      modelMatrices[i] = model;
+    }
+
+    glBindBuffer(GL_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4),
+                 modelMatrices.data(), GL_STATIC_DRAW);
 
     instance_shader.use();
     instance_shader.setMat4("view", camera.GetViewMatrix());
