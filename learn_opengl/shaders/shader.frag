@@ -53,6 +53,7 @@ uniform Material material;
 //uniform DirLight dirLight;
 uniform PointLight pointLights[NR_POINT_LIGHTS];
 //uniform SpotLight spotLight;
+uniform bool blinn;
 
 out vec4 FragColor;
 
@@ -99,9 +100,18 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
-    // specular shading
-    vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+
+    float spec = 0;
+    if (!blinn) {
+        // specular shading (phong)
+        vec3 reflectDir = reflect(-lightDir, normal);
+        spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    } else {
+        // specular shading (blinn-phong)
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess * 2);
+    }
+
     // combine results
     vec3 ambient = light.ambient * vec3(texture(material.texture_diffuse1, TexCoords));
     vec3 diffuse = light.diffuse * diff * vec3(texture(material.texture_diffuse1, TexCoords));

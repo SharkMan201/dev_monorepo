@@ -23,6 +23,8 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height) {
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+bool blinn = false;
+bool bKeyPressed = false;
 
 void processInput(GLFWwindow *window, float delta_time) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE))
@@ -35,6 +37,12 @@ void processInput(GLFWwindow *window, float delta_time) {
     camera.ProcessKeyboard(CAMERA_MOVEMENT::LEFT, delta_time);
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     camera.ProcessKeyboard(CAMERA_MOVEMENT::RIGHT, delta_time);
+  if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) {
+    blinn = bKeyPressed ? blinn : !blinn;
+    bKeyPressed = true;
+  } else {
+    bKeyPressed = false;
+  }
 }
 // store mouse data
 float last_x = 400; // middle of the screen
@@ -185,6 +193,7 @@ int solve() {
 
     our_shader.setVec3("viewPos", camera.GetPosition());
     our_shader.setFloat("time", glfwGetTime());
+    our_shader.setBool("blinn", blinn);
 
     // render the loaded model
     glm::mat4 model = glm::mat4(1.0f);
