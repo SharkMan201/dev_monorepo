@@ -94,14 +94,58 @@ int solve() {
   // setup stbi to flip image y-axis by default
   stbi_set_flip_vertically_on_load(true);
 
+  float cubeVertices[] = {
+      -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.5f,  -0.5f, -0.5f, 0.0f,
+      0.0f,  -1.0f, 0.5f,  0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f, 0.5f,  0.5f,
+      -0.5f, 0.0f,  0.0f,  -1.0f, -0.5f, 0.5f,  -0.5f, 0.0f,  0.0f,  -1.0f,
+      -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, -0.5f, -0.5f, 0.5f,  0.0f,
+      0.0f,  1.0f,  0.5f,  -0.5f, 0.5f,  0.0f,  0.0f,  1.0f,  0.5f,  0.5f,
+      0.5f,  0.0f,  0.0f,  1.0f,  0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+      -0.5f, 0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  -0.5f, -0.5f, 0.5f,  0.0f,
+      0.0f,  1.0f,  -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  -0.5f, 0.5f,
+      -0.5f, -1.0f, 0.0f,  0.0f,  -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,
+      -0.5f, -0.5f, -0.5f, -1.0f, 0.0f,  0.0f,  -0.5f, -0.5f, 0.5f,  -1.0f,
+      0.0f,  0.0f,  -0.5f, 0.5f,  0.5f,  -1.0f, 0.0f,  0.0f,  0.5f,  0.5f,
+      0.5f,  1.0f,  0.0f,  0.0f,  0.5f,  0.5f,  -0.5f, 1.0f,  0.0f,  0.0f,
+      0.5f,  -0.5f, -0.5f, 1.0f,  0.0f,  0.0f,  0.5f,  -0.5f, -0.5f, 1.0f,
+      0.0f,  0.0f,  0.5f,  -0.5f, 0.5f,  1.0f,  0.0f,  0.0f,  0.5f,  0.5f,
+      0.5f,  1.0f,  0.0f,  0.0f,  -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,
+      0.5f,  -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,  0.5f,  -0.5f, 0.5f,  0.0f,
+      -1.0f, 0.0f,  0.5f,  -0.5f, 0.5f,  0.0f,  -1.0f, 0.0f,  -0.5f, -0.5f,
+      0.5f,  0.0f,  -1.0f, 0.0f,  -0.5f, -0.5f, -0.5f, 0.0f,  -1.0f, 0.0f,
+      -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f,  0.5f,  0.5f,  -0.5f, 0.0f,
+      1.0f,  0.0f,  0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.5f,  0.5f,
+      0.5f,  0.0f,  1.0f,  0.0f,  -0.5f, 0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+      -0.5f, 0.5f,  -0.5f, 0.0f,  1.0f,  0.0f};
+  auto light_position = glm::vec3(1.2f, 3.0f, 2.0f);
+
+  unsigned int cubeVao, cubeVbo;
+  glGenVertexArrays(1, &cubeVao);
+  glBindVertexArray(cubeVao);
+  glGenBuffers(1, &cubeVbo);
+  glBindBuffer(GL_ARRAY_BUFFER, cubeVbo);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices,
+               GL_STATIC_DRAW);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                        reinterpret_cast<void *>(0));
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+                        reinterpret_cast<void *>(3 * sizeof(float)));
+  glBindVertexArray(0);
+
   // create shaders
   Shader our_shader("_main/learn_opengl/shaders/shader.vert",
                     "_main/learn_opengl/shaders/shader.frag",
                     "_main/learn_opengl/shaders/explode_geometry_shader.glsl");
 
-  Shader normals_shader("_main/learn_opengl/shaders/normals_shader.vert",
-                    "_main/learn_opengl/shaders/single_color_shader.frag",
-                    "_main/learn_opengl/shaders/normals_geometry_shader.glsl");
+  Shader light_shader("_main/learn_opengl/shaders/light_shader.vert",
+                      "_main/learn_opengl/shaders/light_shader.frag");
+
+  Shader normals_shader(
+      "_main/learn_opengl/shaders/normals_shader.vert",
+      "_main/learn_opengl/shaders/single_color_shader.frag",
+      "_main/learn_opengl/shaders/normals_geometry_shader.glsl");
 
   glEnable(GL_DEPTH_TEST);
 
@@ -131,7 +175,7 @@ int solve() {
     our_shader.setMat4("projection", projection);
 
     // set up a point light
-    our_shader.setVec3("pointLights[0].position", 1.2f, 3.0f, 1.0f);
+    our_shader.setVec3("pointLights[0].position", light_position);
     our_shader.setFloat("pointLights[0].constant", 1.0f);
     our_shader.setFloat("pointLights[0].linear", 0.09f);
     our_shader.setFloat("pointLights[0].quadratic", 0.032f);
@@ -149,12 +193,22 @@ int solve() {
     our_shader.setMat4("model", model);
     our_model.Draw(our_shader);
 
-    normals_shader.use();
-    normals_shader.setMat4("view", camera.GetViewMatrix());
-    normals_shader.setMat4("projection", projection);
-    normals_shader.setMat4("model", model);
-    our_model.Draw(normals_shader);
+    // draw light source
+    glBindVertexArray(cubeVao);
+    model = glm::mat4(1.0f);
+    model = glm::translate(model, light_position);
+    model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));
+    light_shader.use();
+    light_shader.setMat4("view", camera.GetViewMatrix());
+    light_shader.setMat4("projection", projection);
+    light_shader.setMat4("model", model);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
 
+    // normals_shader.use();
+    // normals_shader.setMat4("view", camera.GetViewMatrix());
+    // normals_shader.setMat4("projection", projection);
+    // normals_shader.setMat4("model", model);
+    // our_model.Draw(normals_shader);
 
     // check and call events and swap the buffers
     glfwSwapBuffers(window);
