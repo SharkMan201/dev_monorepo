@@ -172,6 +172,7 @@ private:
     return texture_id;
   }
 
+public:
   // model data
   unordered_map<string, Texture>
       textures_loaded; // store currently loaded textures to avoid

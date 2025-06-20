@@ -99,6 +99,10 @@ int solve() {
       "_main/learn_opengl_instanced_rendering/shaders/shader.vert",
       "_main/learn_opengl_instanced_rendering/shaders/shader.frag");
 
+  Shader instance_shader(
+      "_main/learn_opengl_instanced_rendering/shaders/instance_shader.vert",
+      "_main/learn_opengl_instanced_rendering/shaders/shader.frag");
+
   glEnable(GL_DEPTH_TEST);
 
   float delta_time = 0.0f;
@@ -109,22 +113,27 @@ int solve() {
   Model rock_model(
       "_main/learn_opengl_instanced_rendering/models/rock/rock.obj");
 
-  unsigned int amount = 1000;
+  unsigned int amount = 100000;
   std::vector<glm::mat4> modelMatrices(amount);
   srand(glfwGetTime());
-  float radius = 50.0f;
-  float offset = 2.5f;
+  float radius = 80.0f;
+  float offset = 25.0f;
 
-  for (auto i = 0;i < amount; i++) {
+  for (auto i = 0; i < amount; i++) {
     glm::mat4 model = glm::mat4(1.0f);
 
-    // 1. translation: displace along circle with 'radius' in range [-ffset, offset]
+    // 1. translation: displace along circle with 'radius' in range [-ffset,
+    // offset]
     float angle = static_cast<float>(i) / amount * 360.0f;
-    float displacement = (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+    float displacement =
+        (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
     float x = sin(angle) * radius + displacement;
-    displacement = (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
-    float y = displacement * 0.4f; // keep hight of field smaller compared to width of x & z
-    displacement = (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+    displacement =
+        (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+    float y = displacement *
+              0.4f; // keep hight of field smaller compared to width of x & z
+    displacement =
+        (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
     float z = cos(angle) * radius + displacement;
     model = glm::translate(model, glm::vec3(x, y, z));
 
@@ -132,12 +141,47 @@ int solve() {
     float scale = (rand() % 20) / 100.0f + 0.05f;
     model = glm::scale(model, glm::vec3(scale));
 
-    // 3. rotation: add random rotation around a semi-randomly picked rotation axis vector
+    // 3. rotation: add random rotation around a semi-randomly picked rotation
+    // axis vector
     float rotAngle = (rand() % 360);
     model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
 
     // 4. add to list of matrices
     modelMatrices[i] = model;
+  }
+
+  // instanceBufferObject
+  unsigned int ibo;
+  glGenBuffers(1, &ibo);
+  glBindBuffer(GL_ARRAY_BUFFER, ibo);
+  glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4),
+               modelMatrices.data(), GL_STATIC_DRAW);
+
+  for (int i = 0; i < rock_model.meshes_.size(); i++) {
+    auto vao = rock_model.meshes_[i]->vao;
+    glBindVertexArray(vao);
+
+    // vertex attributes
+    auto vec4Size = sizeof(glm::vec4);
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size,
+                          reinterpret_cast<void *>(0));
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size,
+                          reinterpret_cast<void *>(1 * vec4Size));
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size,
+                          reinterpret_cast<void *>(2 * vec4Size));
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * vec4Size,
+                          reinterpret_cast<void *>(3 * vec4Size));
+
+    glVertexAttribDivisor(3, 1);
+    glVertexAttribDivisor(4, 1);
+    glVertexAttribDivisor(5, 1);
+    glVertexAttribDivisor(6, 1);
+
+    glBindVertexArray(0);
   }
 
   while (!glfwWindowShouldClose(window)) {
@@ -155,7 +199,7 @@ int solve() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     auto projection = glm::perspective(glm::radians(camera.GetFov()),
-                                       800.0f / 600.0f, 0.1f, 100.0f);
+                                       800.0f / 600.0f, 0.1f, 200.0f);
     our_shader.use(); // need to activate the shader before setting the uniforms
     our_shader.setMat4("view", camera.GetViewMatrix());
     our_shader.setMat4("projection", projection);
@@ -167,9 +211,14 @@ int solve() {
     our_shader.setMat4("model", model);
     planet_model.Draw(our_shader);
 
-    for (auto modelMatrix : modelMatrices) {
-      our_shader.setMat4("model", modelMatrix);
-      rock_model.Draw(our_shader);
+    instance_shader.use();
+    instance_shader.setMat4("view", camera.GetViewMatrix());
+    instance_shader.setMat4("projection", projection);
+    for (int i = 0; i < rock_model.meshes_.size(); i++) {
+      glBindVertexArray(rock_model.meshes_[i]->vao);
+      glDrawElementsInstanced(GL_TRIANGLES,
+                              rock_model.meshes_[i]->indices_.size(),
+                              GL_UNSIGNED_INT, 0, amount);
     }
 
     // check and call events and swap the buffers

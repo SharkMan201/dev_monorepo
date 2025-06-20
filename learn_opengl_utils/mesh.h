@@ -103,6 +103,7 @@ private:
     glBindVertexArray(0);
   }
 
+public:
   // render data
   uint32_t vao, vbo, ebo;
   // mesh data
