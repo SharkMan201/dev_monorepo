@@ -99,6 +99,10 @@ int solve() {
                     "_main/learn_opengl/shaders/shader.frag",
                     "_main/learn_opengl/shaders/explode_geometry_shader.glsl");
 
+  Shader normals_shader("_main/learn_opengl/shaders/normals_shader.vert",
+                    "_main/learn_opengl/shaders/single_color_shader.frag",
+                    "_main/learn_opengl/shaders/normals_geometry_shader.glsl");
+
   glEnable(GL_DEPTH_TEST);
 
   float delta_time = 0.0f;
@@ -144,6 +148,13 @@ int solve() {
     model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
     our_shader.setMat4("model", model);
     our_model.Draw(our_shader);
+
+    normals_shader.use();
+    normals_shader.setMat4("view", camera.GetViewMatrix());
+    normals_shader.setMat4("projection", projection);
+    normals_shader.setMat4("model", model);
+    our_model.Draw(normals_shader);
+
 
     // check and call events and swap the buffers
     glfwSwapBuffers(window);
