@@ -96,7 +96,8 @@ int solve() {
 
   // create shaders
   Shader our_shader("_main/learn_opengl/shaders/shader.vert",
-                    "_main/learn_opengl/shaders/shader.frag");
+                    "_main/learn_opengl/shaders/shader.frag",
+                    "_main/learn_opengl/shaders/explode_geometry_shader.glsl");
 
   glEnable(GL_DEPTH_TEST);
 
@@ -135,6 +136,7 @@ int solve() {
     our_shader.setVec3("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
 
     our_shader.setVec3("viewPos", camera.GetPosition());
+    our_shader.setFloat("time", glfwGetTime());
 
     // render the loaded model
     glm::mat4 model = glm::mat4(1.0f);

@@ -17,19 +17,30 @@ public:
   unsigned int id_;
 
   // constructor to read and build the shaders
-  Shader(const char *vertex_path, const char *fragment_path) {
+  Shader(const char *vertex_path, const char *fragment_path, const char* geometry_path = nullptr) {
     // 1. retrieve the vertex/fragment source code from file_path
     std::string vertex_code = FilesUtils::FileReader::readFile(vertex_path);
     std::string fragment_code = FilesUtils::FileReader::readFile(fragment_path);
+    std::string geometry_code;
+    if (geometry_path) {
+      geometry_code = FilesUtils::FileReader::readFile(geometry_path);
+    }
 
     // 2. compile shaders
     uint32_t vertex = compileShader(GL_VERTEX_SHADER, vertex_code);
     uint32_t fragment = compileShader(GL_FRAGMENT_SHADER, fragment_code);
+    uint32_t geometry = -1;
+    if (!geometry_code.empty()) {
+      geometry = compileShader(GL_GEOMETRY_SHADER, geometry_code);
+    }
 
     // 3. create shader program
     id_ = glCreateProgram();
     glAttachShader(id_, vertex);
     glAttachShader(id_, fragment);
+    if (geometry != -1) {
+      glAttachShader(id_, geometry);
+    }
     glLinkProgram(id_);
 
     // check for linking errors

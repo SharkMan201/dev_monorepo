@@ -8,9 +8,11 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
-out vec3 Normal;
-out vec3 FragPos;
-out vec2 TexCoords;
+out VS_OUT {
+    vec2 texCoords;
+    vec3 normal;
+    vec3 fragPos;
+} vs_out;
 
 void main()
 {
@@ -20,7 +22,7 @@ void main()
     // this operation is needed if you are applying a non-uniform scaling
     // if not you can just multiply the normal by the model
     mat3 normalMatrix = mat3(transpose(inverse(model)));
-    Normal =  normalMatrix * aNormal;
-    FragPos = vec3(model * vec4(aPos, 1.0));
-    TexCoords = aTexCoords;
+    vs_out.normal =  normalMatrix * aNormal;
+    vs_out.fragPos = vec3(model * vec4(aPos, 1.0));
+    vs_out.texCoords = aTexCoords;
 };
