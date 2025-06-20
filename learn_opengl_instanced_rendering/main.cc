@@ -109,6 +109,37 @@ int solve() {
   Model rock_model(
       "_main/learn_opengl_instanced_rendering/models/rock/rock.obj");
 
+  unsigned int amount = 1000;
+  std::vector<glm::mat4> modelMatrices(amount);
+  srand(glfwGetTime());
+  float radius = 50.0f;
+  float offset = 2.5f;
+
+  for (auto i = 0;i < amount; i++) {
+    glm::mat4 model = glm::mat4(1.0f);
+
+    // 1. translation: displace along circle with 'radius' in range [-ffset, offset]
+    float angle = static_cast<float>(i) / amount * 360.0f;
+    float displacement = (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+    float x = sin(angle) * radius + displacement;
+    displacement = (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+    float y = displacement * 0.4f; // keep hight of field smaller compared to width of x & z
+    displacement = (rand() % static_cast<int>(2 * offset * 100)) / 100.0f - offset;
+    float z = cos(angle) * radius + displacement;
+    model = glm::translate(model, glm::vec3(x, y, z));
+
+    // 2. scale: scale between 0.05 and 09.25f
+    float scale = (rand() % 20) / 100.0f + 0.05f;
+    model = glm::scale(model, glm::vec3(scale));
+
+    // 3. rotation: add random rotation around a semi-randomly picked rotation axis vector
+    float rotAngle = (rand() % 360);
+    model = glm::rotate(model, rotAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+
+    // 4. add to list of matrices
+    modelMatrices[i] = model;
+  }
+
   while (!glfwWindowShouldClose(window)) {
     // calculate delta
     float current_frame = glfwGetTime();
@@ -136,11 +167,10 @@ int solve() {
     our_shader.setMat4("model", model);
     planet_model.Draw(our_shader);
 
-    model = glm::mat4(1.0f);
-    model = glm::translate(model, glm::vec3(4.0f, 4.0f, 0.0f));
-    model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
-    our_shader.setMat4("model", model);
-    rock_model.Draw(our_shader);
+    for (auto modelMatrix : modelMatrices) {
+      our_shader.setMat4("model", modelMatrix);
+      rock_model.Draw(our_shader);
+    }
 
     // check and call events and swap the buffers
     glfwSwapBuffers(window);
