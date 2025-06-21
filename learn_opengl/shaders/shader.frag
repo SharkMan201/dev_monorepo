@@ -76,7 +76,10 @@ void main() {
     // phase 3: Spot light
 //    result += CalcSpotLight(spotLight, norm, FragPos, viewDir);
 
-    FragColor = vec4(result, 1.0);
+    // manual gamma correction (better be done in post processing)
+    vec3 fragColor = result;
+    float gamma = 2.2;
+    FragColor.rgb = pow(fragColor.rgb, vec3(1.0/gamma));
 };
 
 vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir) {

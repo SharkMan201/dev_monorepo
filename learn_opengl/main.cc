@@ -23,7 +23,7 @@ void framebufferSizeCallback(GLFWwindow *window, int width, int height) {
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-bool blinn = false;
+bool blinn = true;
 bool bKeyPressed = false;
 
 void processInput(GLFWwindow *window, float delta_time) {
@@ -156,6 +156,9 @@ int solve() {
       "_main/learn_opengl/shaders/normals_geometry_shader.glsl");
 
   glEnable(GL_DEPTH_TEST);
+
+  // auto gamma correct, we will do it manually in the fragment shader
+  // glEnable(GL_FRAMEBUFFER_SRGB);
 
   float delta_time = 0.0f;
   float last_frame = 0.0f;
