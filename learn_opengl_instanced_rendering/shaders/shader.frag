@@ -7,5 +7,7 @@ out vec4 FragColor;
 
 void main()
 {
-    FragColor = texture(texture_diffuse1, TexCoords);
+    float gamma = 2.2;
+
+    FragColor.rgb = pow(texture(texture_diffuse1, TexCoords).rgb, vec3(1 / gamma));
 }

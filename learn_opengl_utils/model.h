@@ -122,7 +122,7 @@ private:
         textures.push_back(textures_loaded[tex_file_name.C_Str()]);
       } else {
         Texture texture;
-        texture.id = TextureFromFile(tex_file_name.C_Str(), directory_);
+        texture.id = TextureFromFile(tex_file_name.C_Str(), directory_, type);
         texture.type = type_name;
         texture.path = tex_file_name.C_Str();
         textures.push_back(texture);
@@ -133,7 +133,8 @@ private:
     return textures;
   }
 
-  static uint32_t TextureFromFile(const char *name, const string &dir) {
+  static uint32_t TextureFromFile(const char *name, const string &dir,
+                                  const aiTextureType type) {
     unsigned int texture_id;
     string path = dir + "/" + string(name);
     glGenTextures(1, &texture_id);
@@ -142,16 +143,22 @@ private:
     unsigned char *data = stbi_load(LocalPaths::getLocalPath(path).c_str(),
                                     &width, &height, &nr_components, 0);
     if (data) {
+      GLenum internalFormat = GL_RED;
       GLenum format = GL_RED;
       if (nr_components == 1)
-        format = GL_RED;
-      else if (nr_components == 3)
+        internalFormat = format = GL_RED;
+      else if (nr_components == 3) {
+        // gamma corrected textures (should only apply to diffuse maps)
+        internalFormat = type == aiTextureType_DIFFUSE ? GL_SRGB : GL_RGB;
         format = GL_RGB;
-      else if (nr_components == 4)
+      } else if (nr_components == 4) {
+        internalFormat =
+            type == aiTextureType_DIFFUSE ? GL_SRGB_ALPHA : GL_RGBA;
         format = GL_RGBA;
+      }
 
       glBindTexture(GL_TEXTURE_2D, texture_id);
-      glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format,
+      glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format,
                    GL_UNSIGNED_BYTE, data);
       glGenerateMipmap(GL_TEXTURE_2D);
 
