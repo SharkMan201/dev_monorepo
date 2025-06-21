@@ -111,7 +111,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
         spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     } else {
         // specular shading (blinn-phong)
-        vec3 halfwayDir = normalize(lightDir + viewDir);
+        vec3 halfwayDir = normalizes(lightDir + viewDir);
         spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess * 2);
     }
 
@@ -122,7 +122,8 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
 
     // attentuation
     float distance = length(light.position - fragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
+//    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance * distance);
+    float attenuation = 1.0 / (distance * distance);
     ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
