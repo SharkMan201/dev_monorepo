@@ -100,7 +100,9 @@ int solve() {
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
   // setup stbi to flip image y-axis by default
-  stbi_set_flip_vertically_on_load(true);
+
+  // why do I need to disable flip vertically ??!?!
+  // stbi_set_flip_vertically_on_load(true);
 
   float cubeVertices[] = {
       -0.5f, -0.5f, -0.5f, 0.0f,  0.0f,  -1.0f, 0.5f,  -0.5f, -0.5f, 0.0f,
@@ -163,7 +165,8 @@ int solve() {
   float delta_time = 0.0f;
   float last_frame = 0.0f;
 
-  Model our_model("_main/learn_opengl/models/backpack/backpack.obj");
+  // Model our_model("_main/learn_opengl/models/backpack/backpack.obj");
+  Model our_model("_main/learn_opengl/models/ant/ant.obj");
 
   while (!glfwWindowShouldClose(window)) {
     // calculate delta

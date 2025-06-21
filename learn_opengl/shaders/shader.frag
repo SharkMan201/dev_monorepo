@@ -111,7 +111,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
         spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     } else {
         // specular shading (blinn-phong)
-        vec3 halfwayDir = normalizes(lightDir + viewDir);
+        vec3 halfwayDir = normalize(lightDir + viewDir);
         spec = pow(max(dot(normal, halfwayDir), 0.0), material.shininess * 2);
     }
 
