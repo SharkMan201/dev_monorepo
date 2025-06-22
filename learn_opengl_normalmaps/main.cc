@@ -96,7 +96,13 @@ int main() {
 
   // lighting info
   // -------------
-  glm::vec3 lightPos(0.5f, 1.0f, 0.3f);
+  glm::vec3 lightPos(0.5f, 1.0f, 2.3f);
+
+  Model nanosuit("_main/learn_opengl_normalmaps/models/nanosuit/nanosuit.obj");
+  stbi_set_flip_vertically_on_load(true);
+  Model backpack("_main/learn_opengl_normalmaps/models/backpack/backpack.obj");
+  stbi_set_flip_vertically_on_load(false);
+  Model cyborg("_main/learn_opengl_normalmaps/models/cyborg/cyborg.obj");
 
   // render loop
   // -----------
@@ -126,19 +132,23 @@ int main() {
     shader.setMat4("view", view);
     // render normal-mapped quad
     glm::mat4 model = glm::mat4(1.0f);
-    model =
-        glm::rotate(model, glm::radians((float)glfwGetTime() * -10.0f),
-                    glm::normalize(glm::vec3(
-                        1.0, 0.0, 1.0))); // rotate the quad to show normal
-                                          // mapping from multiple directions
+    // model =
+    //     glm::rotate(model, glm::radians((float)glfwGetTime() * -10.0f),
+    //                 glm::normalize(glm::vec3(
+    //                     1.0, 0.0, 1.0))); // rotate the quad to show normal
+    //                                       // mapping from multiple directions
+    // model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
     shader.setMat4("model", model);
     shader.setVec3("viewPos", camera.GetPosition());
     shader.setVec3("lightPos", lightPos);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, diffuseMap);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, normalMap);
-    renderQuad();
+    // glActiveTexture(GL_TEXTURE0);
+    // glBindTexture(GL_TEXTURE_2D, diffuseMap);
+    // glActiveTexture(GL_TEXTURE1);
+    // glBindTexture(GL_TEXTURE_2D, normalMap);
+    // renderQuad();
+    backpack.Draw(shader);
+    // nanosuit.Draw(shader);
+    // cyborg.Draw(shader);
 
     // render light source (simply re-renders a smaller plane at the light's
     // position for debugging/visualization)
@@ -146,6 +156,10 @@ int main() {
     model = glm::translate(model, lightPos);
     model = glm::scale(model, glm::vec3(0.1f));
     shader.setMat4("model", model);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, diffuseMap);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, normalMap);
     renderQuad();
 
     // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved

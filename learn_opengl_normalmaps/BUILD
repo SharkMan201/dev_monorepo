@@ -4,6 +4,7 @@ cc_binary(
     name = "learn_opengl_normalmaps",
     srcs = ["main.cc"],
     data = [
+        "//learn_opengl_normalmaps/models",
         "//learn_opengl_normalmaps/shaders",
         "//learn_opengl_normalmaps/textures",
     ],

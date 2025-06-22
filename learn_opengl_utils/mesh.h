@@ -17,6 +17,7 @@ struct Vertex {
   glm::vec3 position;
   glm::vec3 normal;
   glm::vec2 tex_coords;
+  glm::vec3 tangent;
 };
 
 struct Texture {
@@ -44,6 +45,7 @@ public:
     // diffuse & specular texture idx
     uint32_t diffuse_nr = 1;
     uint32_t specular_nr = 1;
+    uint32_t normal_nr = 1;
     for (auto i = 0; i < textures_.size(); i++) {
       // activate the texture
       glActiveTexture(GL_TEXTURE0 + i);
@@ -53,6 +55,8 @@ public:
         number = to_string(diffuse_nr++);
       else if (name == "texture_specular")
         number = to_string(specular_nr++);
+      else if (name == "texture_normal")
+        number = to_string(normal_nr++);
 
       shader.setInt("material." + name + number, i);
       glBindTexture(GL_TEXTURE_2D, textures_[i].id);
@@ -98,6 +102,12 @@ private:
     glVertexAttribPointer(
         2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex),
         reinterpret_cast<void *>(offsetof(Vertex, tex_coords)));
+
+    // tangents
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(
+        3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+        reinterpret_cast<void *>(offsetof(Vertex, tangent)));
 
     // unbind vao
     glBindVertexArray(0);

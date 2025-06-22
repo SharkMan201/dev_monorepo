@@ -31,8 +31,9 @@ private:
   void LoadModel(const string &path) {
     Assimp::Importer importer;
     string local_path = LocalPaths::getLocalPath(path);
-    const aiScene *scene = importer.ReadFile(local_path, aiProcess_Triangulate |
-                                                             aiProcess_FlipUVs);
+    const aiScene *scene = importer.ReadFile(
+        local_path,
+        aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
         !scene->mRootNode) {
@@ -68,6 +69,7 @@ private:
       // process vertex positions
       vertex.position = FromAiVector3DToGlmV3(mesh->mVertices[i]);
       vertex.normal = FromAiVector3DToGlmV3(mesh->mNormals[i]);
+      vertex.tangent = FromAiVector3DToGlmV3(mesh->mTangents[i]);
 
       vertex.tex_coords = glm::vec2(0.0f, 0.0f);
       if (mesh->mTextureCoords[0])
@@ -94,6 +96,10 @@ private:
           material, aiTextureType_SPECULAR, "texture_specular");
       textures.insert(textures.end(), specular_maps.begin(),
                       specular_maps.end());
+
+      vector<Texture> normal_maps = LoadMaterialTextures(
+          material, aiTextureType_HEIGHT, "texture_normal");
+      textures.insert(textures.end(), normal_maps.begin(), normal_maps.end());
     }
 
     // TODO: probably we should use unique ptrs ?
