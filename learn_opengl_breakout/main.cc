@@ -15,13 +15,13 @@ const unsigned int SCREEN_HEIGHT = 600;
 
 Game Breakout(SCREEN_WIDTH, SCREEN_HEIGHT);
 
-int main(int argc, char *argv[]) {
+int solve(int argc, char *argv[]) {
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #ifdef __APPLE__
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, false);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
   glfwWindowHint(GLFW_RESIZABLE, false);
 
@@ -84,6 +84,16 @@ int main(int argc, char *argv[]) {
 
   glfwTerminate();
   return 0;
+}
+
+int main(int argc, char *argv[]) {
+  try {
+    return solve(argc, argv);
+  } catch (std::exception &e) {
+    std::cerr << __FILE__ << " " << __LINE__ << " " << e.what() << std::endl
+              << std::flush;
+    return -1;
+  }
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action,

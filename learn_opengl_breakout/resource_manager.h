@@ -16,23 +16,19 @@ public:
   static std::map<std::string, std::unique_ptr<Shader>> Shaders;
   static std::map<std::string, std::unique_ptr<Texture2D>> Textures;
 
-  static Shader *LoadShader(const std::string &vShaderFile,
-                            const std::string &fShaderFile,
-                            const std::string &gShaderFile,
-                            const std::string &name);
-  static Shader *GetShader(const std::string &name);
-  static Texture2D *LoadTexture(const std::string &file, bool alpha,
-                                const std::string &name);
-  static Texture2D *GetTexture(const std::string &name);
+  static Shader *LoadShader(const char *vShaderFile, const char *fShaderFile,
+                            const char *gShaderFile, const char *name);
+  static Shader *GetShader(const char *name);
+  static Texture2D *LoadTexture(const char *file, bool alpha, const char *name);
+  static Texture2D *GetTexture(const char *name);
   static void Clear();
 
 private:
   ResourceManager() = default;
-  static std::unique_ptr<Shader>
-  loadShaderFromFile(const std::string &vShaderFile,
-                     const std::string &fShaderFile,
-                     const std::string &gShaderFile);
-  static std::unique_ptr<Texture2D> loadTextureFromFile(const std::string &file,
+  static std::unique_ptr<Shader> loadShaderFromFile(const char *vShaderFile,
+                                                    const char *fShaderFile,
+                                                    const char *gShaderFile);
+  static std::unique_ptr<Texture2D> loadTextureFromFile(const char *file,
                                                         bool alpha);
 };
 

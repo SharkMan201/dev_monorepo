@@ -4,12 +4,9 @@
 
 #ifndef GAME_H
 #define GAME_H
+#include "learn_opengl_breakout/sprite_renderer.h"
 
-enum GameState {
-  GAME_ACTIVE,
-  GAME_MENU,
-  GAME_WIN
-};
+enum GameState { GAME_ACTIVE, GAME_MENU, GAME_WIN };
 
 class Game {
 public:
@@ -17,6 +14,7 @@ public:
   GameState State;
   bool Keys[1024];
   unsigned int Width, Height;
+  std::unique_ptr<SpriteRenderer> Renderer;
 
   // constructour/destructor
   Game(unsigned int width, unsigned int height);
@@ -30,4 +28,4 @@ public:
   void Render();
 };
 
-#endif //GAME_H
+#endif // GAME_H

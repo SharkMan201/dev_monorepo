@@ -5,10 +5,16 @@ cc_library(
     srcs = [
         "game.cc",
         "resource_manager.cc",
+        "sprite_renderer.cc",
     ],
     hdrs = [
         "game.h",
         "resource_manager.h",
+        "sprite_renderer.h",
+    ],
+    data = [
+        "//learn_opengl_breakout/shaders",
+        "//learn_opengl_breakout/textures",
     ],
     linkopts = OPENGL_LINKOPTS,
     deps = [
