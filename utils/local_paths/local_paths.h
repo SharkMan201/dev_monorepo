@@ -42,5 +42,4 @@ private:
   std::unique_ptr<Runfiles> runfiles_;
   static LocalPaths *local_paths_;
 };
-LocalPaths *LocalPaths::local_paths_;
 #endif // LOCAL_PATHS_H

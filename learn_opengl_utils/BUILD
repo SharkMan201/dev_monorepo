@@ -5,6 +5,7 @@ cc_library(
         "mesh.h",
         "model.h",
         "shader.h",
+        "texture.h",
     ],
     visibility = ["//visibility:public"],
     deps = [

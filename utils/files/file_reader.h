@@ -51,8 +51,6 @@ private:
 
   static FileReader *file_reader_;
 };
-
-FileReader *FileReader::file_reader_;
 } // namespace FilesUtils
 
 #endif // FILE_READER_H
