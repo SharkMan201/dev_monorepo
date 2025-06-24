@@ -4,6 +4,7 @@
 
 #ifndef GAME_H
 #define GAME_H
+#include "learn_opengl_breakout/game_level.h"
 #include "learn_opengl_breakout/sprite_renderer.h"
 
 enum GameState { GAME_ACTIVE, GAME_MENU, GAME_WIN };
@@ -15,8 +16,11 @@ public:
   bool Keys[1024];
   unsigned int Width, Height;
   std::unique_ptr<SpriteRenderer> Renderer;
+  std::vector<GameLevel> Levels;
+  unsigned int Level;
+  std::unique_ptr<GameObject> Player;
 
-  // constructour/destructor
+  // constructor/destructor
   Game(unsigned int width, unsigned int height);
   ~Game();
 

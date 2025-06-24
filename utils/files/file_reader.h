@@ -7,6 +7,7 @@
 
 #include "utils/local_paths/local_paths.h"
 
+#include <boost/algorithm/string.hpp>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -36,6 +37,14 @@ public:
 
     file.close();
     return std::string{buffer.begin(), buffer.end()};
+  }
+
+  static std::vector<std::string> readFileLines(const std::string &path) {
+    auto fileContent = readFile(path);
+    std::vector<std::string> ret;
+    boost::split(ret, fileContent, boost::is_any_of("\n"));
+
+    return ret;
   }
 
 private:

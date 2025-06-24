@@ -9,5 +9,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//utils/local_paths",
+        "@boost.algorithm",
     ],
 )
