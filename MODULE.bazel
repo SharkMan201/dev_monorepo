@@ -3,6 +3,10 @@ module(
     repo_name = "me_aeed_dev_monorepo",
 )
 
+#
+# C++ setup
+#
+
 bazel_dep(name = "rules_cc", version = "0.1.1")
 bazel_dep(name = "platforms", version = "1.0.0")
 bazel_dep(name = "googletest", version = "1.17.0", repo_name = "gtest")
@@ -49,3 +53,22 @@ http_archive(
     strip_prefix = "glfw-{}".format(GLFW_VERSION),
     urls = ["https://github.com/glfw/glfw/archive/{}.zip".format(GLFW_VERSION)],
 )
+
+#
+#   Python setup
+#
+bazel_dep(name = "rules_python", version = "1.5.1")
+
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = "3.12",
+)
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "pypi",
+    python_version = "3.12",
+    requirements_lock = "//:requirements_lock_3_12.txt",
+)
+
+use_repo(pip, "pypi")

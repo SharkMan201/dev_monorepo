@@ -1,4 +1,5 @@
 load("@hedron_compile_commands//:refresh_compile_commands.bzl", "refresh_compile_commands")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
 refresh_compile_commands(
     name = "refresh_compile_commands",
@@ -13,4 +14,13 @@ refresh_compile_commands(
     # Wildcard patterns, like //... for everything, *are* allowed here, just like a build.
       # As are additional targets (+) and subtractions (-), like in bazel query https://docs.bazel.build/versions/main/query.html#expressions
     # And if you're working on a header-only library, specify a test or binary target that compiles it.
+)
+
+#
+# Python setup
+#
+compile_pip_requirements(
+    name = "pypi_deps",
+    src = "requirements.in",
+    requirements_txt = "requirements_lock_3_12.txt",
 )
